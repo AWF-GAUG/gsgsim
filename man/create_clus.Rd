@@ -8,7 +8,7 @@ create_clus(dt_s, col_off, row_off, sp_dist)
 }
 \arguments{
 \item{dt_s}{A data.table object storing sample locations as returned from
-\link{\code{create_sys}}. Column names must be identical to "row", "col",
+\code{\link{create_sys}}. Column names must be identical to "row", "col",
 and "id". The first stores the row index, the second the column index, and
 the last an identifier.}
 
@@ -21,7 +21,7 @@ the origin in y-direction. See details.}
 \item{sp_dist}{The distance between sub-plots.}
 }
 \value{
-A \link[data.table]{\code{data.table}} object with row and column
+A \code{\link[data.table]{data.table}} object with row and column
   indices of the generated clusters
 }
 \description{
@@ -53,4 +53,3 @@ dt_s_cl[, plot(col, row)]; dt_s[, points(col, row, pch = 16)];
 \author{
 Sebastian Schnell
 }
-

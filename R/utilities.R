@@ -1,16 +1,16 @@
-#' Load country boundaries into a \link[sp]{\code{SpatialPolygonsDataFrame}}
+#' Load country boundaries into a \code{\link[sp]{SpatialPolygonsDataFrame}}
 #' object
 #'
-#' @param x If missing, \link[raster]{\code{getData}} function is used to load
+#' @param x If missing, \code{link[raster]{getData}} function is used to load
 #'   boundaries from the GADM project (http://gadm.org). Otherwise the name of
-#'   the data source (see \link[gdal]{\code{readOGR}}).
+#'   the data source (see \code{\link[gdal]{readOGR}}).
 #' @param country_code Country specified by three letter ISO code. Use function
-#'   \link[raster]{\code{ccodes}} to get appropriate codes.
+#'   \code{\link[raster]{ccodes}} to get appropriate codes.
 #' @param adm_level Level of administrative subdivision 0 = country, 1 = first
 #'   level subdivision
-#' @param ... Other arguments to \link[rgdal]{\code{readOGR}}.
+#' @param ... Other arguments to \code{\link[rgdal]{readOGR}}.
 #'
-#' @return A \link[sp]{\code{SpatialPolygonsDataFrame}} object storing country
+#' @return A \code{\link[sp]{SpatialPolygonsDataFrame}} object storing country
 #'   boundaries.
 #' @author Nils Noelke, Sebastian Schnell
 #' @export

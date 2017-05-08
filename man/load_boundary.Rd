@@ -2,30 +2,30 @@
 % Please edit documentation in R/utilities.R
 \name{load_boundary}
 \alias{load_boundary}
-\title{Load country boundaries into a \link[sp]{\code{SpatialPolygonsDataFrame}}
+\title{Load country boundaries into a \code{\link[sp]{SpatialPolygonsDataFrame}}
 object}
 \usage{
 load_boundary(x, country_code, adm_level, ...)
 }
 \arguments{
-\item{x}{If missing, \link[raster]{\code{getData}} function is used to load
+\item{x}{If missing, \code{link[raster]{getData}} function is used to load
 boundaries from the GADM project (http://gadm.org). Otherwise the name of
-the data source (see \link[gdal]{\code{readOGR}}).}
+the data source (see \code{\link[gdal]{readOGR}}).}
 
 \item{country_code}{Country specified by three letter ISO code. Use function
-\link[raster]{\code{ccodes}} to get appropriate codes.}
+\code{\link[raster]{ccodes}} to get appropriate codes.}
 
 \item{adm_level}{Level of administrative subdivision 0 = country, 1 = first
 level subdivision}
 
-\item{...}{Other arguments to \link[rgdal]{\code{readOGR}}.}
+\item{...}{Other arguments to \code{\link[rgdal]{readOGR}}.}
 }
 \value{
-A \link[sp]{\code{SpatialPolygonsDataFrame}} object storing country
+A \code{\link[sp]{SpatialPolygonsDataFrame}} object storing country
   boundaries.
 }
 \description{
-Load country boundaries into a \link[sp]{\code{SpatialPolygonsDataFrame}}
+Load country boundaries into a \code{\link[sp]{SpatialPolygonsDataFrame}}
 object
 }
 \examples{
@@ -36,4 +36,3 @@ plot(ger_bnd);
 \author{
 Nils Noelke, Sebastian Schnell
 }
-

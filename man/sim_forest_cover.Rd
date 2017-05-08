@@ -47,4 +47,3 @@ plot(forest_ras);
 \author{
 Paul Magdon, Sebastian Schnell
 }
-

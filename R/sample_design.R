@@ -40,12 +40,12 @@ gen_sys <- function(dis, ras_dim, start = NULL) {
 #'
 #' @param dis Distance in kilo metres between sample locations
 #' @param bnd Polygon outline of an area of interest for which the sampling grid
-#'   is generated (a \link[sp]{\code{SpatialPolygonsDataFrame}} object).
+#'   is generated (a \code{\link[sp]{SpatialPolygonsDataFrame}} object).
 #'
 #' @details The grid consists of equidistant points along circles of latitude on
 #'   a spheroid (WGS84/Pseudo-Mercator, epsg:43328)
 #'
-#' @return An object of \link[sp]{\code{SpatialPointsDataFrame}} holding the
+#' @return An object of \code{\link[sp]{SpatialPointsDataFrame}} holding the
 #'   sampling locations of the grid.
 #' @author Lutz Fehrmann
 #' @export

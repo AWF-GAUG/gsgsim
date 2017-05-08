@@ -31,4 +31,3 @@ Sampling on irregular shapes is not implemented yet. The function
 \author{
 Sebastian Schnell
 }
-

@@ -11,10 +11,10 @@ gen_gsg(dis, bnd)
 \item{dis}{Distance in kilo metres between sample locations}
 
 \item{bnd}{Polygon outline of an area of interest for which the sampling grid
-is generated (a \link[sp]{\code{SpatialPolygonsDataFrame}} object).}
+is generated (a \code{\link[sp]{SpatialPolygonsDataFrame}} object).}
 }
 \value{
-An object of \link[sp]{\code{SpatialPointsDataFrame}} holding the
+An object of \code{\link[sp]{SpatialPointsDataFrame}} holding the
   sampling locations of the grid.
 }
 \description{
@@ -35,4 +35,3 @@ plot(gsg_ger)
 \author{
 Lutz Fehrmann
 }
-

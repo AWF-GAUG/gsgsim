@@ -1,7 +1,7 @@
 #' Create point clusters arround sample locations
 #'
 #' @param dt_s A data.table object storing sample locations as returned from
-#'   \link{\code{create_sys}}. Column names must be identical to "row", "col",
+#'   \code{\link{create_sys}}. Column names must be identical to "row", "col",
 #'   and "id". The first stores the row index, the second the column index, and
 #'   the last an identifier.
 #' @param col_off A vector specifying the offset of sub-plot coordinates from
@@ -22,7 +22,7 @@
 #'   point. If set to a value of one, it has no effect and offsets can be
 #'   specified in absolut values from the reference.
 #'
-#' @return A \link[data.table]{\code{data.table}} object with row and column
+#' @return A \code{\link[data.table]{data.table}} object with row and column
 #'   indices of the generated clusters
 #'
 #' @author Sebastian Schnell
