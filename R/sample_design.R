@@ -16,11 +16,9 @@
 #' @author Sebastian Schnell
 #' @export
 gen_sys <- function(dis, ras_dim, start = NULL) {
-  if (is.null(r_start)) {
-    r_start <- round(runif(1, min = 1, max = dis), 0);
-  }
-  if (is.null(c_start)) {
-    c_start <- round(runif(1, min = 1, max = dis), 0);
+  if (is.null(start)) {
+    start <- c(round(runif(1, min = 1, max = dis)),
+               round(runif(1, min = 1, max = dis)));
   }
   if (length(dis) == 1) {
     d_r <- d_c <- dis;
@@ -29,8 +27,8 @@ gen_sys <- function(dis, ras_dim, start = NULL) {
     d_c <- dis[2];
   }
 
-  dt_s <- data.table(expand.grid(row = seq.int(r_start, ras_dim[1], d_r),
-                                 col = seq.int(c_start, ras_dim[2], d_c)));
+  dt_s <- data.table(expand.grid(row = seq.int(start[1], ras_dim[1], d_r),
+                                 col = seq.int(start[2], ras_dim[2], d_c)));
   dt_s[, id := 1:.N];
   return(dt_s);
 }
