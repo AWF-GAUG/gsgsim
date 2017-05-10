@@ -46,7 +46,8 @@ create_clus <- function(dt_s, col_off, row_off, sp_dist) {
          expectation. The data.table object should have the following columns in
          that order: row, col, id");
   }
-  dt_s_cl <- dt_s[, list(col = col + col_off*sp_dist,
+  dt_s_cl <- dt_s[, list(id_sp = 1:length(col_off),
+                         col = col + col_off*sp_dist,
                          row = row + row_off*sp_dist),
                   by = id];
   return(dt_s_cl[!is.na(col)]);

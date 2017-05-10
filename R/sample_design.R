@@ -36,12 +36,13 @@ gen_sys <- function(dis, ras_dim, start = NULL) {
 #' Generating global sampling grids with constant distance between sample
 #' locations on the surface of a sphere
 #'
-#' @param dis Distance in kilo metres between sample locations
+#' @param dis Distance in kilometers between sample locations
 #' @param bnd Polygon outline of an area of interest for which the sampling grid
-#'   is generated (a \code{\link[sp]{SpatialPolygonsDataFrame}} object).
+#'   is generated (a \code{\link[sp]{SpatialPolygonsDataFrame}} object). If
+#'   \code{NULL}, a global grid is generated.
 #'
 #' @details The grid consists of equidistant points along circles of latitude on
-#'   a spheroid (WGS84/Pseudo-Mercator, epsg:43328)
+#'   a spheroid (WGS84/Pseudo-Mercator, epsg:43328).
 #'
 #' @return An object of \code{\link[sp]{SpatialPointsDataFrame}} holding the
 #'   sampling locations of the grid.
@@ -54,15 +55,21 @@ gen_sys <- function(dis, ras_dim, start = NULL) {
 #'
 #' gsg_ger <- gen_gsg(50, ger_bnd);
 #' plot(gsg_ger)
-gen_gsg <- function(dis, bnd) {
-  if (identical(proj4string(landpoly), CRS("+init=epsg:4326")@projargs) == FALSE) {
-    warning("bnd has wrong projection! Transformed to epsg:4326");
-    sp::spTransform(x = bnd, CRSobj = CRS("+init=epsg:4326"));
+gen_gsg <- function(dis, bnd = NULL) {
+  wgs84 <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +towgs84=0,0,0";
+  # Area of interest
+  if (is.null(bnd)) {
+    data("wrld_simpl"); # Using data set from maptools, "countries" in getData() not working
+    bnd <- wrld_simpl;
+  } else {
+    if (identical(proj4string(bnd), wgs84) == FALSE) {
+      warning("bnd has wrong projection! Transformed to epsg:4326");
+      bnd <- sp::spTransform(x = bnd, CRSobj = CRS(wgs84));
+    }
   }
 
-  # Area of interest
-  aoi <- c(sp::bbox(landpoly)[2], sp::bbox(landpoly)[4],
-           sp::bbox(landpoly)[1], sp::bbox(landpoly)[3]);
+  aoi <- c(sp::bbox(bnd)[2], sp::bbox(bnd)[4],
+           sp::bbox(bnd)[1], sp::bbox(bnd)[3]);
 
   wgs84_semi_major_axis <- 6378.137;
   deg <- (dis/(pi * wgs84_semi_major_axis)) * 180;
@@ -85,10 +92,11 @@ gen_gsg <- function(dis, bnd) {
 
   spdf_gsg <- sp::SpatialPointsDataFrame(coords = coord,
                                          data = data.frame(1:nrow(coord)));
-  sp::proj4string(spdf_gsg) <- sp::CRS("+init=epsg:4326");
+  sp::proj4string(spdf_gsg) <- sp::CRS(wgs84);
 
   # Subset gridpoints falling on land (or in a specific country)
-  spdf_gsg_sub <- rgeos::gIntersection(spdf_gsg, landpoly);
-
-  return(spdf_gsg_sub)
+  df_over <- sp::over(spdf_gsg, bnd);
+  idx <- is.na(df_over[, 1]) == FALSE;
+  return(SpatialPointsDataFrame(coords = coordinates(spdf_gsg[idx, ]),
+                                data = cbind(1:sum(idx), df_over[idx, ])));
 }
