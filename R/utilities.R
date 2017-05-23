@@ -32,4 +32,3 @@ load_boundary = function (x, country_code, adm_level, ...) {
   return(bnd);
 }
 
-# testgit
