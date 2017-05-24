@@ -17,7 +17,7 @@
 #'
 #' @examples
 #' # Load boundary of Germany
-#' ger_bnd <- load_boundary(x = NA, country_code = "DEU", adm_level = 0);
+#' ger_bnd <- load_boundary(country_code = "DEU", adm_level = 0);
 #' plot(ger_bnd);
 load_boundary = function (x, country_code, adm_level, ...) {
   if (missing(x)) {

@@ -9,7 +9,7 @@
 #'   available models.
 #' @param p Forest cover of the out put map, 0 < p <= 1.
 #'
-#' @return A binary \link[raster]{\code{raster}} map of simulated forest cover.
+#' @return A binary \code{\link[raster]{raster}} map of simulated forest cover.
 #' @author Paul Magdon, Sebastian Schnell
 #' @export
 #'
@@ -32,14 +32,15 @@
 #' plot(forest_ras);
 sim_forest_cover <- function(ras_dim, pxl_size, cov_model, p) {
 
-  RFoptions(spConform = FALSE);
+  RandomFields::RFoptions(spConform = FALSE);
 
+  grd <- sp::GridTopology(c(0, 0), c(pxl_size, pxl_size), ras_dim);
   sim <- RandomFields::RFsimulate(cov_model,
-                                  x = 1:ras_dim[1],
-                                  y = 1:ras_dim[2]);
+                                  x = grd);
   thresh <- qnorm(p, mean = mean(sim), sd = sd(sim));
   bin <- sim < thresh;
   map <- raster::raster(bin);
-  raster::extent(map) <- raster::extent(c(0, ras_dim[1]*pxl_size, 0, ras_dim[2]*pxl_size));
+  raster::extent(map) <- raster::extent(c(0, ras_dim[1]*pxl_size,
+                                          0, ras_dim[2]*pxl_size));
   return(map);
 }

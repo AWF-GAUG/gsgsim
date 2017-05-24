@@ -20,7 +20,7 @@ available models.}
 \item{p}{Forest cover of the out put map, 0 < p <= 1.}
 }
 \value{
-A binary \link[raster]{\code{raster}} map of simulated forest cover.
+A binary \code{\link[raster]{raster}} map of simulated forest cover.
 }
 \description{
 Simulating forest cover maps with defined covariance structure using random

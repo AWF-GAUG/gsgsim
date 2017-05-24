@@ -98,5 +98,6 @@ gen_gsg <- function(dis, bnd = NULL) {
   df_over <- sp::over(spdf_gsg, bnd);
   idx <- is.na(df_over[, 1]) == FALSE;
   return(SpatialPointsDataFrame(coords = coordinates(spdf_gsg[idx, ]),
-                                data = cbind(1:sum(idx), df_over[idx, ])));
+                                data = cbind(1:sum(idx), df_over[idx, ]),
+                                proj4string = crs(spdf_gsg)));
 }
