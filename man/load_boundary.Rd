@@ -5,7 +5,7 @@
 \title{Load country boundaries into a \code{\link[sp]{SpatialPolygonsDataFrame}}
 object}
 \usage{
-load_boundary(x, country_code, adm_level, ...)
+load_boundary(x = NULL, country_code = "world", adm_level = 0, ...)
 }
 \arguments{
 \item{x}{If missing, \code{link[raster]{getData}} function is used to load
@@ -30,7 +30,7 @@ object
 }
 \examples{
 # Load boundary of Germany
-ger_bnd <- load_boundary(x = NA, country_code = "DEU", adm_level = 0);
+ger_bnd <- load_boundary(country_code = "DEU", adm_level = 0);
 plot(ger_bnd);
 }
 \author{

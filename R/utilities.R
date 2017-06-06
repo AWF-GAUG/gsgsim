@@ -19,12 +19,17 @@
 #' # Load boundary of Germany
 #' ger_bnd <- load_boundary(country_code = "DEU", adm_level = 0);
 #' plot(ger_bnd);
-load_boundary = function (x, country_code, adm_level, ...) {
-  if (missing(x)) {
-    # Load boundary from GADM
-    bnd <- raster::getData(name = 'GADM',
-                           country = country_code,
-                           level = adm_level);
+load_boundary = function (x = NULL, country_code = 'world', adm_level = 0, ...) {
+  if (is.null(x)) {
+    if (toupper(country_code) == 'WORLD') {
+      data("wrld_simpl");
+      return(wrld_simpl);
+    } else {
+      # Load boundary from GADM
+      bnd <- raster::getData(name = 'GADM',
+                             country = country_code,
+                             level = adm_level);
+    }
   } else {
     # Load boundary from other vector format using readOGR
     bnd <- rgdal::readOGR(dsn = x, ...);
