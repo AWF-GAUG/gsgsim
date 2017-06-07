@@ -52,16 +52,18 @@ shinyServer(function(input, output) {
 
       # Increment the progress bar, and update the detail text.
       incProgress(3/3, detail = paste("Plotting"), 3)
+    })
+  })
 
       # Download
-      # Take a dependency on input$downloadButton
-      # input$download
+          output$download <- downloadHandler(
+          filename = function() {
+            paste("GSG",input$dist,"_",input$country_code, ".kml", sep="")
+          },
+          content = function(file) {
+            writeOGR(gsg, file, layer = paste("GSG",input$dist, "_kml", sep=""), driver = "KML")
 
-      #
-
-
-    })
-
-  })
+          }
+          contentType = "application/kml")
 
 })

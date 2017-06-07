@@ -53,8 +53,9 @@ shinyUI(fluidPage(
                     "ESRI Shapefile" = ".shp",
                     "CSV" = ".csv")),
 
+
       # Button "generate"
-      actionButton("download", "download")
+      downloadLink("download", "Download")
 
      ),
 
