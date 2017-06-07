@@ -55,7 +55,7 @@ shinyUI(fluidPage(
 
 
       # Button "generate"
-      downloadLink("download", "Download")
+      downloadButton("download", "Download")
 
      ),
 
