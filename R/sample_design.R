@@ -88,7 +88,10 @@ gen_gsg <- function(dis, bnd = NULL) {
   colnames(coord) <- c("X", "Y");
 
   # Subset coordinates in aoi
-  coord <- coord[coord[, 1] >= aoi[3] & coord[, 1] <= aoi[4],];
+  coord <- coord[coord[, 1] >= aoi[3] & coord[, 1] <= aoi[4], , drop = FALSE];
+  if (nrow(coord) == 0) {
+    stop("No sample locations in the area of interest! Adjust value of dis");
+  }
 
   spdf_gsg <- sp::SpatialPointsDataFrame(coords = coord,
                                          data = data.frame(1:nrow(coord)));
@@ -97,6 +100,10 @@ gen_gsg <- function(dis, bnd = NULL) {
   # Subset gridpoints falling on land (or in a specific country)
   df_over <- sp::over(spdf_gsg, bnd);
   idx <- is.na(df_over[, 1]) == FALSE;
+  if (sum(is.na(df_over[, 1])) == 0) {
+    stop("No sample locations in the area of interest! Adjust value of dis");
+  }
+
   return(SpatialPointsDataFrame(coords = coordinates(spdf_gsg[idx, ]),
                                 data = cbind(1:sum(idx), df_over[idx, ]),
                                 proj4string = crs(spdf_gsg)));
