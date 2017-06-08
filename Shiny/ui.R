@@ -58,15 +58,9 @@ navbarPage("Global Sampling Grid", id="nav",
 
       hr(),h4("Download GSG"),
 
-      # selection of output format
-      selectInput("format", "File format",
-                  c("KML" = ".kml",
-                    "ESRI Shapefile" = ".shp",
-                    "CSV" = ".csv")),
-
 
       # Button "generate"
-      downloadButton("download", "Download")
+      downloadButton("download", "Download KML")
 )
     )
   ),
