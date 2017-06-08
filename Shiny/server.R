@@ -48,8 +48,7 @@ observeEvent(
 
       # generate GSG based on inputs from ui.R
       # isolate () to avoid dependency on input$dist (but reactive on button)
-      gsg <-isolate(gen_gsg(input$dist, bnd));
-
+      gsg <- isolate(gen_gsg(input$dist, bnd));
 
       # Increment the progress bar, and update the detail text.
       incProgress(2/3, detail = paste("Generating GSG"), 2)
@@ -58,10 +57,10 @@ observeEvent(
       # draw a map with generated GSG
       leafletProxy("map") %>%
         clearShapes() %>%
-        addPolygons(data=bnd, color = "#444444", weight = 1, smoothFactor = 0.5,
+        addPolygons(data = bnd, color = "#444444", weight = 1, smoothFactor = 0.5,
                     opacity = 0.4, fillOpacity = 0.5) %>%
-        addCircles(data=gsg, weight = 3, radius=40,
-                  color="#CD0000", stroke = TRUE, fillOpacity = 0.9) %>%
+        addCircles(data = gsg, weight = 3, radius = 40,
+                  color = "#CD0000", stroke = TRUE, fillOpacity = 0.9) %>%
         fitBounds(lng1 = xmax(bnd),lat1 = ymax(bnd),
                   lng2 = ymin(bnd),lat2 = ymin(bnd))
 

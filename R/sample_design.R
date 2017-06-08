@@ -90,7 +90,9 @@ gen_gsg <- function(dis, bnd = NULL) {
   # Subset coordinates in aoi
   coord <- coord[coord[, 1] >= aoi[3] & coord[, 1] <= aoi[4], , drop = FALSE];
   if (nrow(coord) == 0) {
-    stop("No sample locations in the area of interest! Adjust value of dis");
+    warning("No sample locations in the area of interest! Adjust value of dis");
+    return(SpatialPoints(coord = matrix(c(0, 0), ncol = 2),
+                         proj4string = CRS(wgs84)));
   }
 
   spdf_gsg <- sp::SpatialPointsDataFrame(coords = coord,
@@ -101,10 +103,12 @@ gen_gsg <- function(dis, bnd = NULL) {
   df_over <- sp::over(spdf_gsg, bnd);
   idx <- is.na(df_over[, 1]) == FALSE;
   if (sum(is.na(df_over[, 1])) == 0) {
-    stop("No sample locations in the area of interest! Adjust value of dis");
+    warning("No sample locations in the area of interest! Adjust value of dis");
+    return(SpatialPoints(coord = matrix(c(0, 0), ncol = 2),
+                         proj4string = CRS(wgs84)));
   }
 
   return(SpatialPointsDataFrame(coords = coordinates(spdf_gsg[idx, ]),
                                 data = cbind(1:sum(idx), df_over[idx, ]),
-                                proj4string = crs(spdf_gsg)));
+                                proj4string = raster::crs(spdf_gsg)));
 }

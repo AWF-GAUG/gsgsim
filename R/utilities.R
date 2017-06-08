@@ -34,7 +34,7 @@ load_boundary = function (x = NULL, country_code = 'world', adm_level = 0, ...) 
                              country = country_code[1],
                              level = adm_level);
       row.names(bnd) <- country_code[1];
-      if (length(country_code > 1)) {
+      if (length(country_code) > 1) {
         for (i in 2:length(country_code)) {
           temp_bnd <- raster::getData(name = 'GADM',
                                       country = country_code[i],
