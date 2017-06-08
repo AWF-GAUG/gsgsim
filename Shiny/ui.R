@@ -56,6 +56,9 @@ navbarPage("Global Sampling Grid", id="nav",
       # Button "generate"
       actionButton("go", "Generate"),
 
+      hr(),
+      textOutput("text1"),
+
 
       hr(),h4("Download GSG"),
 
@@ -63,7 +66,7 @@ navbarPage("Global Sampling Grid", id="nav",
                          c("shp" = "ESRI Shapefile",
                            "kml" = "KML")),
       # Button "generate"
-      downloadButton("download", "Download KML")
+      downloadButton("download", "Download")
 )
     )
   ),

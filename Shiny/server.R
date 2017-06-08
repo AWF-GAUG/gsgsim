@@ -50,6 +50,18 @@ observeEvent(
       # isolate () to avoid dependency on input$dist (but reactive on button)
       gsg <- isolate(gen_gsg(input$dist, bnd));
 
+      output$text1 = renderText({paste0("Generated points: ",length(gsg))})
+
+      if(length(gsg)==1)
+      {
+        showModal(modalDialog(
+        title = "Warning",
+        "No sample locations in the area of interest! Adjust grid distance!",
+        easyClose = FALSE
+        ))
+
+      }else{
+
       # Increment the progress bar, and update the detail text.
       incProgress(2/3, detail = paste("Generating GSG"), 2)
 
@@ -59,17 +71,13 @@ observeEvent(
         clearShapes() %>%
         addPolygons(data = bnd, color = "#444444", weight = 1, smoothFactor = 0.5,
                     opacity = 0.4, fillOpacity = 0.5) %>%
-<<<<<<< HEAD
-        addCircles(data = gsg, weight = 3, radius = 40,
-                  color = "#CD0000", stroke = TRUE, fillOpacity = 0.9) %>%
-        fitBounds(lng1 = xmax(bnd),lat1 = ymax(bnd),
-                  lng2 = ymin(bnd),lat2 = ymin(bnd))
-=======
+
         addCircles(data=gsg, weight = 3, radius=40,
                   color="#CD0000", stroke = TRUE, fillOpacity = 0.9) %>%
+
         fitBounds(lng1 = xmax(gsg),lat1 = ymax(gsg),
                   lng2 = ymin(gsg),lat2 = ymin(gsg))
->>>>>>> dd8214653c5772fa8ced2bce5a005cb481725589
+
 
       # Increment the progress bar, and update the detail text.
       incProgress(3/3, detail = paste("Plotting"), 3)
@@ -84,6 +92,7 @@ observeEvent(
         filename = function() { paste0("GSG", input$dist, input$country_code, ".",input$variable) },
         content = function(file) {writeOGR(gsg, file, layer = paste0("GSG",input$dist, "_",input$variable), driver = input$variable)}
         )
+      }
     })
   })
 })
