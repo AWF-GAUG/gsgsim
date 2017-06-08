@@ -73,11 +73,11 @@ observeEvent(
       )
 
 
-      # Download
+      ### Export GSG ###
       output$download <- downloadHandler(
-        filename = function() { paste0("GSG", input$dist, input$country_code, ".kml") },
-        content = function(file) {writeOGR(gsg, file, layer = paste("GSG",input$dist, "_kml", sep=""), driver = "KML")},
-        contentType = "application/kml")
+        filename = function() { paste0("GSG", input$dist, input$country_code, ".",input$variable) },
+        content = function(file) {writeOGR(gsg, file, layer = paste0("GSG",input$dist, "_",input$variable), driver = input$variable)}
+        )
     })
   })
 })
