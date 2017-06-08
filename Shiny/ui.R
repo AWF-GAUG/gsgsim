@@ -34,7 +34,8 @@ navbarPage("Global Sampling Grid", id="nav",
       # Example input country code
       selectInput("country_code", "Select country",
                   c("World", raster::ccodes()[, 1]),
-                  c("world", raster::ccodes()[, 2])),
+                  c("world", raster::ccodes()[, 2]),
+                  multiple = TRUE),
 
       # Input administrative level
       selectInput("adm_level", "Administrative level",

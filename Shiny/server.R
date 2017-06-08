@@ -62,8 +62,8 @@ observeEvent(
                     opacity = 0.4, fillOpacity = 0.5) %>%
         addCircles(data=gsg, weight = 3, radius=40,
                   color="#CD0000", stroke = TRUE, fillOpacity = 0.9) %>%
-        fitBounds(lng1 = xmax(bnd),lat1 = ymax(bnd),
-                  lng2 = ymin(bnd),lat2 = ymin(bnd))
+        fitBounds(lng1 = xmax(gsg),lat1 = ymax(gsg),
+                  lng2 = ymin(gsg),lat2 = ymin(gsg))
 
       # Increment the progress bar, and update the detail text.
       incProgress(3/3, detail = paste("Plotting"), 3)
