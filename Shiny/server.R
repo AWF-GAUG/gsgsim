@@ -10,16 +10,23 @@
 
 library(shiny)
 library(gsgsim)
+library(leaflet)
+library(raster)
+library(DT)
 
 # Define server logic required to generate GSG
 shinyServer(function(input, output) {
 
 
-  output$gsgPlot <- renderPlot({
+output$map <- renderLeaflet({
+        leaflet() %>%
+          addProviderTiles("OpenStreetMap")
 
+})
 
+observeEvent(
     # Take a dependency on input$goButton
-    input$go
+    input$go, {
 
     withProgress(message = 'Work in progress', value = 0,{
 
@@ -38,28 +45,39 @@ shinyServer(function(input, output) {
                                    country_code = input$country_code,
                                    adm_level = 0));
 
+
       # generate GSG based on inputs from ui.R
       # isolate () to avoid dependency on input$dist (but reactive on button)
       gsg <-isolate(gen_gsg(input$dist, bnd));
+
 
       # Increment the progress bar, and update the detail text.
       incProgress(2/3, detail = paste("Generating GSG"), 2)
 
 
       # draw a map with generated GSG
-      plot(bnd)
-      plot(gsg, pch=20, col="red", add=TRUE)
+      leafletProxy("map") %>%
+        clearShapes() %>%
+        addPolygons(data=bnd, color = "#444444", weight = 1, smoothFactor = 0.5,
+                    opacity = 0.4, fillOpacity = 0.5) %>%
+        addCircles(data=gsg, weight = 3, radius=40,
+                  color="#CD0000", stroke = TRUE, fillOpacity = 0.9) %>%
+        fitBounds(lng1 = xmax(bnd),lat1 = ymax(bnd),
+                  lng2 = ymin(bnd),lat2 = ymin(bnd))
 
       # Increment the progress bar, and update the detail text.
       incProgress(3/3, detail = paste("Plotting"), 3)
 
+      output$mytable <- DT::renderDataTable(
+        DT::datatable(as.data.frame(gsg), options = list(pageLength = 25))
+      )
+
 
       # Download
       output$download <- downloadHandler(
-      filename = function() { paste0("GSG", input$dist, input$country_code, ".kml") },
-      content = function(file) {writeOGR(gsg, file, layer = paste("GSG",input$dist, "_kml", sep=""), driver = "KML")},
-      contentType = "application/kml")
+        filename = function() { paste0("GSG", input$dist, input$country_code, ".kml") },
+        content = function(file) {writeOGR(gsg, file, layer = paste("GSG",input$dist, "_kml", sep=""), driver = "KML")},
+        contentType = "application/kml")
     })
   })
-
 })

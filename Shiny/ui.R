@@ -9,25 +9,35 @@
 
 library(shiny)
 library(raster)
+library(leaflet)
+library(DT)
 
 # Define UI for application that draws a histogram
-shinyUI(fluidPage(
+navbarPage("Global Sampling Grid", id="nav",
 
-  # Application title
-  titlePanel("Generate GSG"),
+           tabPanel("Interactive map",
+                    div(class="outer",
 
-  # Sidebar with a slider input for number of bins
-  sidebarLayout(
-    sidebarPanel(
+                        tags$head(
+                          # Include our custom CSS
+                          includeCSS("styles.css")
+
+                        ),
+
+      leafletOutput("map", width="100%", height="100%"),
+
+       absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
+                   draggable = TRUE, top = 60, left = "auto", right = 20, bottom = "auto",
+                   width = 330, height = "auto",
       # Inputs
-
+      h4("Generate GSG"),
       # Example input country code
       selectInput("country_code", "Select country",
                   c("World", raster::ccodes()[, 1]),
                   c("world", raster::ccodes()[, 2])),
 
       # Input administrative level
-      selectInput("adm_level", "administrative level",
+      selectInput("adm_level", "Administrative level",
                   c("Level 0" = "0",
                     "Level 1" = "1",
                     "Level 2" = "2")),
@@ -43,9 +53,10 @@ shinyUI(fluidPage(
       numericInput("dist", "Grid distance", 250),
 
       # Button "generate"
-      actionButton("go", "generate"),
+      actionButton("go", "Generate"),
 
-      hr(),
+
+      hr(),h4("Download GSG"),
 
       # selection of output format
       selectInput("format", "File format",
@@ -56,16 +67,8 @@ shinyUI(fluidPage(
 
       # Button "generate"
       downloadButton("download", "Download")
-
-     ),
-
-
-
-    # Show a plot of the generated grid
-    mainPanel(
-       plotOutput("gsgPlot", width = "100%")
-
-
+)
     )
-  )
-))
+  ),
+tabPanel("Data Explorer", DT::dataTableOutput('mytable'))
+)
