@@ -62,9 +62,9 @@ navbarPage("Global Sampling Grid", id="nav",
 
       hr(),h4("Download GSG"),
 
-      radioButtons("format", "Select output format:",
-                         c("shp" = "ESRI Shapefile",
-                           "kml" = "KML")),
+      selectInput("format", "Select output format:",
+                         c("ESRI Shapefile" = "shp",
+                           "KML" = "kml")),
       # Button "generate"
       downloadButton("download", "Download")
 )

@@ -85,14 +85,38 @@ observeEvent(
       output$mytable <- DT::renderDataTable(
         DT::datatable(as.data.frame(gsg), options = list(pageLength = 25))
       )
-
-
-      ### Export GSG ###
-      output$download <- downloadHandler(
-        filename = function() { paste0("GSG", input$dist, input$country_code, ".",input$variable) },
-        content = function(file) {writeOGR(gsg, file, layer = paste0("GSG",input$dist, "_",input$variable), driver = input$format)}
-        )
       }
     })
-  })
-})
+
+      ### Export GSG ###
+
+     observeEvent(input$format,
+      if(input$format == "shp"){
+
+      output$download <- downloadHandler(
+          filename = 'GSGExport.zip',
+          content = function(file) {
+           if (length(Sys.glob("GSGExport.*"))>0){
+             file.remove(Sys.glob("GSGExport.*"))
+            }
+            writeOGR(gsg, dsn="GSGExport.shp", layer="GSGExport", driver="ESRI Shapefile")
+            zip(zipfile='GSGExport.zip', files=Sys.glob("GSGExport.*"))
+            file.copy("GSGExport.zip", file)
+            if (length(Sys.glob("GSGExport.*"))>0){
+              file.remove(Sys.glob("GSGExport.*"))
+            }
+          })
+      }
+      else if (input$format == "kml"){
+
+        output$download <- downloadHandler(
+          filename = function() {
+          paste0("GSG", input$dist, ".kml")
+          },
+          content = function(file) {
+          writeOGR(gsg, file, layer = paste0("GSG",input$dist, "_KML"), driver = "KML")
+          })
+      }
+     )
+    })
+    })
