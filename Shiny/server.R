@@ -33,9 +33,9 @@ observeEvent(
       # load selected aoi as boundary
       in_bnd <- input$aoi
       if (is.null(in_bnd)) {
-        getshp <- NULL
+        getaoi <- NULL
       } else {
-          if(length(in_bnd)<2) {
+          if(length(in_bnd) == 1) {
             getaoi <- in_bnd$datapath
           } else {
              dir<-dirname(in_bnd[1,4])
