@@ -49,6 +49,9 @@ navbarPage("Global Sampling Grid", id="nav",
                 accept=c('.shp','.dbf','.sbn','.sbx','.shx',".prj",".kml"),
                 multiple=TRUE),
 
+      hr(),
+
+
       # grid distance in km
       numericInput("dist", "Grid distance", 250),
 
