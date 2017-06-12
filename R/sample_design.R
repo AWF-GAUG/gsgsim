@@ -62,12 +62,18 @@ gen_gsg <- function(dis, bnd = NULL) {
     data("wrld_simpl"); # Using data set from maptools, "countries" in getData() not working
     bnd <- wrld_simpl;
   } else {
-    if (identical(proj4string(bnd), wgs84) == FALSE) {
-      warning("bnd has wrong projection! Transformed to epsg:4326");
-      proj4string(bnd) <- CRS("+init=epsg:4326")
-      bnd <- sp::spTransform(x = bnd, CRSobj = CRS(wgs84));
+    if (grepl('wgs84',proj4string(bnd)) == FALSE) {
+      if (!is.na((proj4string(bnd))) == TRUE) {
+        warning("bnd has wrong projection! Transformed to EPSG:4326");
+        bnd <- sp::spTransform(x = bnd, CRSobj = CRS(wgs84));
+      }
+      else if (!is.na((proj4string(bnd))) == FALSE) {
+        warning("bnd has no projection! Projected to EPSG:4326");
+        proj4string(bnd) <- CRS(wgs84)
+      }
     }
   }
+
 
   aoi <- c(sp::bbox(bnd)[2], sp::bbox(bnd)[4],
            sp::bbox(bnd)[1], sp::bbox(bnd)[3]);
