@@ -49,8 +49,11 @@ navbarPage("Global Sampling Grid", id="nav",
                 accept=c('.shp','.dbf','.sbn','.sbx','.shx',".prj",".kml"),
                 multiple=TRUE),
 
+      hr(),
+
+
       # grid distance in km
-      numericInput("dist", "Grid distance", 250),
+      numericInput("dist", "Grid distance:", 250),
 
       # Cluster generation
       numericInput("clusterpoints", "Points per cluster", 4),
@@ -60,6 +63,10 @@ navbarPage("Global Sampling Grid", id="nav",
                   c("Line" = "line",
                     "L-shape" = "lshape",
                     "Square" = "square")),
+
+      # point distance
+      sliderInput("pointdist", "Point distance:",
+                  min=0, max=1000, value=500),
 
       # Button "generate"
       actionButton("go", "Generate"),
