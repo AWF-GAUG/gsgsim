@@ -46,12 +46,20 @@ navbarPage("Global Sampling Grid", id="nav",
       # Example file input for aoi
       fileInput("aoi",
                 "Upload specific aoi (.shp or .kml)",
-                multiple = FALSE,
-                accept = c(".shp", ".kml")),
-      hr(),
+                accept=c('.shp','.dbf','.sbn','.sbx','.shx',".prj",".kml"),
+                multiple=TRUE),
 
       # grid distance in km
       numericInput("dist", "Grid distance", 250),
+
+      # Cluster generation
+      numericInput("clusterpoints", "Points per cluster", 4),
+
+      # Cluster configuration
+      selectInput("configuration", "Cluster configuration",
+                  c("Line" = "line",
+                    "L-shape" = "lshape",
+                    "Square" = "square")),
 
       # Button "generate"
       actionButton("go", "Generate"),
