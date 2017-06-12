@@ -64,6 +64,7 @@ gen_gsg <- function(dis, bnd = NULL) {
   } else {
     if (identical(proj4string(bnd), wgs84) == FALSE) {
       warning("bnd has wrong projection! Transformed to epsg:4326");
+      proj4string(bnd) <- CRS("+init=epsg:4326")
       bnd <- sp::spTransform(x = bnd, CRSobj = CRS(wgs84));
     }
   }

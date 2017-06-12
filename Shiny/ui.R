@@ -46,8 +46,8 @@ navbarPage("Global Sampling Grid", id="nav",
       # Example file input for aoi
       fileInput("aoi",
                 "Upload specific aoi (.shp or .kml)",
-                multiple = FALSE,
-                accept = c(".shp", ".kml")),
+                accept=c('.shp','.dbf','.sbn','.sbx','.shx',".prj",".kml"),
+                multiple=TRUE),
       hr(),
 
       # grid distance in km

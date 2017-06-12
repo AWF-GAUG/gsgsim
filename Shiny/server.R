@@ -35,13 +35,19 @@ observeEvent(
       if (is.null(in_bnd)) {
         bnd_path <- NULL
       } else {
-        bnd_path <- in_bnd$datapath
+        dir<-dirname(in_bnd[1,4])
+
+        for ( i in 1:nrow(in_bnd)) {
+          file.rename(in_bnd[i,4], paste0(dir,"/",in_bnd[i,1]))}
+
+        getshp <- list.files(dir, pattern="*.shp", full.names=TRUE)
+        print(getshp)
       }
 
       # Increment the progress bar, and update the detail text.
       incProgress(1/3, detail = paste("Dowloading boundary (can take a while...)"), 1)
 
-      bnd <- isolate(load_boundary(x = bnd_path,
+      bnd <- isolate(load_boundary(x = getshp,
                                    country_code = input$country_code,
                                    adm_level = 0));
 
