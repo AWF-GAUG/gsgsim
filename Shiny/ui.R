@@ -44,13 +44,10 @@ navbarPage("Global Sampling Grid", id="nav",
                     "Level 2" = "2")),
 
       # Example file input for aoi
-      fileInput("aoi",
-                "Upload specific aoi (.shp or .kml)",
+      fileInput("aoi", "Upload specific aoi as shapefile (epsg:4326) or KML.
+                For .shp upload select the .shp, .prj, .shx and .dbf file simultaneously!",
                 accept=c('.shp','.dbf','.sbn','.sbx','.shx',".prj",".kml"),
                 multiple=TRUE),
-
-      hr(),
-
 
       # grid distance in km
       numericInput("dist", "Grid distance:", 250),
