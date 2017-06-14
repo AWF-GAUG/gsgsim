@@ -62,7 +62,7 @@ gen_gsg <- function(dis, bnd = NULL) {
     data("wrld_simpl"); # Using data set from maptools, "countries" in getData() not working
     bnd <- wrld_simpl;
   } else {
-    if (grepl('wgs84',proj4string(bnd)) == FALSE) {
+    if (identical(proj4string(bnd),wgs84) == FALSE) {
       if (!is.na((proj4string(bnd))) == TRUE) {
         warning("bnd has wrong projection! Transformed to EPSG:4326");
         bnd <- sp::spTransform(x = bnd, CRSobj = CRS(wgs84));

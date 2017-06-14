@@ -47,7 +47,8 @@ load_boundary = function (x = NULL, country_code = 'world', adm_level = 0, ...) 
     }
   } else {
     # Load boundary from other vector format using readOGR
-    bnd <- maptools::readShapePoly(fn = x, ...);
+    layer = sub(pattern = "(.*)\\..*$", replacement = "\\1", basename(x))
+    bnd <- rgdal::readOGR(dsn = x, layer=layer, ...);
   }
   return(bnd);
 }
