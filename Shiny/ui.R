@@ -11,6 +11,7 @@ library(shiny)
 library(raster)
 library(leaflet)
 library(DT)
+library(threejs)
 
 # Define UI for application that draws a histogram
 navbarPage("Global Sampling Grid", id="nav",
@@ -43,9 +44,13 @@ navbarPage("Global Sampling Grid", id="nav",
                     "Level 1" = "1",
                     "Level 2" = "2")),
 
+      # Select file format
+      radioButtons(inputId = 'inputformat',
+                   label = 'Upload specific aoi as shapefile (epsg:4326) or KML',
+                   choices = c('Shapefile' = 'shp', 'KML' = 'kml'), inline = TRUE),
+
       # Example file input for aoi
-      fileInput("aoi", "Upload specific aoi as shapefile (epsg:4326) or KML.
-                For .shp upload select the .shp, .prj, .shx and .dbf file simultaneously!",
+      fileInput("aoi", "For .shp upload select the .shp, .prj, .shx and .dbf file simultaneously!",
                 accept=c('.shp','.dbf','.sbn','.sbx','.shx',".prj",".kml"),
                 multiple=TRUE),
 
@@ -82,5 +87,8 @@ navbarPage("Global Sampling Grid", id="nav",
 )
     )
   ),
-tabPanel("Data Explorer", DT::dataTableOutput('mytable'))
+tabPanel("Data Explorer", DT::dataTableOutput('mytable')),
+tabPanel("3D Globe",
+         globeOutput("globe"))
+
 )

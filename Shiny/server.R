@@ -13,7 +13,9 @@ library(gsgsim)
 library(leaflet)
 library(raster)
 library(DT)
+library(threejs)
 
+options(shiny.error = browser)
 # Define server logic required to generate GSG
 shinyServer(function(input, output) {
 
@@ -35,20 +37,30 @@ observeEvent(
       if (is.null(in_bnd)) {
         getaoi <- NULL
       } else {
-          if(length(in_bnd) == 1) {
-            getaoi <- in_bnd$datapath
-          } else {
-             dir<-dirname(in_bnd[1,4])
+        switch(input$inputformat,
+               'kml' = {
+                 dir<-dirname(in_bnd[1,4])
+                 file.rename(in_bnd[1,4], paste0(dir,"/",in_bnd[1,1]))
+                 getaoi <- list.files(dir, pattern="*.kml", full.names=TRUE)
 
-            for ( i in 1:nrow(in_bnd)) {
-              file.rename(in_bnd[i,4], paste0(dir,"/",in_bnd[i,1]))}
+               },
+               'shp' = {
 
-            getaoi <- list.files(dir, pattern="*.shp", full.names=TRUE)
-            }
-        }
+                dir<-dirname(in_bnd[1,4])
+
+                for ( i in 1:nrow(in_bnd)) {
+                   file.rename(in_bnd[i,4], paste0(dir,"/",in_bnd[i,1]))}
+
+                getaoi <- list.files(dir, pattern="*.shp", full.names=TRUE)
+
+            })
+      }
+
+
 
       # Increment the progress bar, and update the detail text.
       incProgress(1/3, detail = paste("Dowloading boundary (can take a while...)"), 1)
+
 
       bnd <- isolate(load_boundary(x = getaoi,
                                    country_code = input$country_code,
@@ -91,9 +103,20 @@ observeEvent(
       # Increment the progress bar, and update the detail text.
       incProgress(3/3, detail = paste("Plotting"), 3)
 
+      # Generate Data Table
       output$mytable <- DT::renderDataTable(
         DT::datatable(as.data.frame(gsg), options = list(pageLength = 25))
       )
+
+      gsgdf=as.data.frame(gsg)
+      output$globe <- renderGlobe({
+        earth <- "http://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73909/world.topo.bathy.200412.3x5400x2700.jpg"
+        globejs(img = earth,
+                lat = gsgdf$Y,
+                long = gsgdf$X,
+                value = 40,
+                bg = "white", color = "red",
+                atmosphere=TRUE) })
       }
     })
 
