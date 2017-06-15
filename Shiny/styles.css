@@ -1,5 +1,5 @@
 input[type="number"] {
-  max-width: 80%;
+  max-width: 100%;
 }
 
 div.outer {
@@ -13,7 +13,7 @@ div.outer {
 }
 
 /* Customize fonts */
-body, label, input, button, select { 
+body, label, input, button, select {
   font-family: 'Helvetica Neue', Helvetica;
   font-weight: 200;
 }

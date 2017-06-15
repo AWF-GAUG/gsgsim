@@ -9,11 +9,12 @@
 
 
 library(shiny)
+library(shinyjs)
 library(gsgsim)
 library(leaflet)
 library(raster)
 library(DT)
-library(threejs)
+
 
 options(shiny.error = browser)
 # Define server logic required to generate GSG
@@ -24,6 +25,10 @@ output$map <- renderLeaflet({
         leaflet() %>%
           addProviderTiles("OpenStreetMap")
 
+})
+
+observeEvent(input$reset_input, {
+  shinyjs::reset("")
 })
 
 observeEvent(
@@ -83,6 +88,7 @@ observeEvent(
 
       }else{
 
+      center=gCentroid(gsg)
       # Increment the progress bar, and update the detail text.
       incProgress(2/3, detail = paste("Generating GSG"), 2)
 
@@ -90,14 +96,18 @@ observeEvent(
       # draw a map with generated GSG
       leafletProxy("map") %>%
         clearShapes() %>%
+
         addPolygons(data = bnd, color = "#444444", weight = 1, smoothFactor = 0.5,
                     opacity = 0.4, fillOpacity = 0.5) %>%
 
         addCircles(data=gsg, weight = 3, radius=40,
                   color="#CD0000", stroke = TRUE, fillOpacity = 0.9) %>%
 
-        fitBounds(lng1 = xmax(gsg),lat1 = ymax(gsg),
-                  lng2 = ymin(gsg),lat2 = ymin(gsg))
+
+        setView(center$x, center$y, zoom=5)
+        #%>%
+        #setMaxBounds(lng1 = xmax(gsg),lat1 = ymax(gsg),
+        #          lng2 = ymin(gsg),lat2 = ymin(gsg))
 
 
       # Increment the progress bar, and update the detail text.
@@ -108,15 +118,7 @@ observeEvent(
         DT::datatable(as.data.frame(gsg), options = list(pageLength = 25))
       )
 
-      gsgdf=as.data.frame(gsg)
-      output$globe <- renderGlobe({
-        earth <- "http://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73909/world.topo.bathy.200412.3x5400x2700.jpg"
-        globejs(img = earth,
-                lat = gsgdf$Y,
-                long = gsgdf$X,
-                value = 40,
-                bg = "white", color = "red",
-                atmosphere=TRUE) })
+
       }
     })
 
