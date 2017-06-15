@@ -26,7 +26,9 @@ navbarPage("Global Sampling Grid",
 
                         ),
 
+
       leafletOutput("map")
+
 
 
 
