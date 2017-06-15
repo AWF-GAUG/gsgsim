@@ -46,11 +46,11 @@ navbarPage("Global Sampling Grid", id="nav",
 
       # Select file format
       radioButtons(inputId = 'inputformat',
-                   label = 'Upload specific aoi as shapefile (epsg:4326) or KML',
+                   label = 'Upload specific aoi as shapefile or KML',
                    choices = c('Shapefile' = 'shp', 'KML' = 'kml'), inline = TRUE),
 
       # Example file input for aoi
-      fileInput("aoi", "For .shp upload select the .shp, .prj, .shx and .dbf file simultaneously!",
+      fileInput("aoi", "For .shp upload (epsg:4326) select the .shp, .prj, .shx and .dbf file simultaneously!",
                 accept=c('.shp','.dbf','.sbn','.sbx','.shx',".prj",".kml"),
                 multiple=TRUE),
 
