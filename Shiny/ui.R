@@ -29,7 +29,7 @@ tabPanel("Interactive map",
                         ),
 
 
-      leafletOutput("map")
+      leafletOutput("map", width="100%", height="100%")
 
 )),
 
