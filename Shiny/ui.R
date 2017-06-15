@@ -8,34 +8,37 @@
 #
 
 library(shiny)
+library(shinyjs)
 library(raster)
 library(leaflet)
 library(DT)
 
+
+
+ui <- fluidPage(
+  shinyjs::useShinyjs(),
+
 # Define UI for application that draws a histogram
-navbarPage("Global Sampling Grid",
-           id="nav",
+navbarPage("Global Sampling Grid", id="nav",
 
+  tabPanel("Interactive map", value="gomap",
 
+  div(class="outer",
+    tags$head(
 
+      # Include our custom CSS
+      includeCSS("styles.css")
+    ),
+   leafletOutput("map")
+  )
+  ),
 
-tabPanel("Interactive map",
-                    div(class="outer",
+  tabPanel("Data Explorer",
+         DT::dataTableOutput('mytable')
+  ),
 
-                        tags$head(
-                          # Include our custom CSS
-                          includeCSS("styles.css")
-
-                        ),
-
-
-      leafletOutput("map", width="100%", height="100%")
-
-)),
-
-tabPanel("Data Explorer", DT::dataTableOutput('mytable')),
-
-tabPanel("GSG Settings",
+  tabPanel("GSG Settings",
+           div(id="settings",
             fluidRow(
               column(4,
                      # Inputs
@@ -92,6 +95,6 @@ tabPanel("GSG Settings",
                      downloadButton("download", "Download")
 
                      )
-            )
+            ))
 
-))
+)))
