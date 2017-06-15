@@ -9,7 +9,6 @@
 
 
 library(shiny)
-library(shinyjs)
 library(gsgsim)
 library(leaflet)
 library(raster)
@@ -27,9 +26,7 @@ output$map <- renderLeaflet({
 
 })
 
-observeEvent(input$reset_input, {
-  shinyjs::reset("")
-})
+
 
 observeEvent(
     # Take a dependency on input$goButton

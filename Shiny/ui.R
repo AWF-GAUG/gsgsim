@@ -8,7 +8,6 @@
 #
 
 library(shiny)
-library(shinyjs)
 library(raster)
 library(leaflet)
 library(DT)
@@ -17,7 +16,10 @@ library(DT)
 navbarPage("Global Sampling Grid",
            id="nav",
 
-           tabPanel("Interactive map",
+
+
+
+tabPanel("Interactive map",
                     div(class="outer",
 
                         tags$head(
@@ -29,17 +31,10 @@ navbarPage("Global Sampling Grid",
 
       leafletOutput("map")
 
-
-
-
-
-
-
-
-
-
 )),
+
 tabPanel("Data Explorer", DT::dataTableOutput('mytable')),
+
 tabPanel("GSG Settings",
             fluidRow(
               column(4,
@@ -58,11 +53,10 @@ tabPanel("GSG Settings",
                                    "Level 2" = "2")),
 
                      radioButtons(inputId = 'inputformat',
-                                  label = 'What type of file are you uploading?',
-                                  choices = c('Shapefile' = 'shp', 'KML' = 'kml')),
+                                  label = 'Upload specific aoi as shapefile (epsg:4326) or KML',
+                                  choices = c('Shapefile' = 'shp', 'KML' = 'kml'), inline = TRUE),
                      # Example file input for aoi
-                     fileInput("aoi", "Upload specific aoi as shapefile (epsg:4326) or KML.
-                               For .shp upload select the .shp, .prj, .shx and .dbf file simultaneously!",
+                     fileInput("aoi", "For .shp upload select the .shp, .prj, .shx and .dbf file simultaneously!",
                                accept=c('.shp','.dbf','.sbn','.sbx','.shx',".prj",".kml"),
                                multiple=TRUE)
               ),
@@ -85,17 +79,18 @@ tabPanel("GSG Settings",
 
                      # Button "generate"
                      actionButton("reset_input", "Reset inputs"),
-                     actionButton("go", "Generate"),
-                     textOutput("text1")
+                     actionButton("go", "Generate")
                      ),
               column(4,
                      h4("Download GSG"),
-
+                    textOutput("text1"),
                      selectInput("format", "Select output format:",
                                  c("ESRI Shapefile" = "shp",
                                    "KML" = "kml")),
-                     # Button "generate"
+                     # Button "download"
+
                      downloadButton("download", "Download")
+
                      )
             )
 
