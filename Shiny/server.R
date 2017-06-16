@@ -9,6 +9,7 @@
 
 
 library(shiny)
+library(shinyjs)
 library(gsgsim)
 library(leaflet)
 library(raster)
@@ -17,16 +18,25 @@ library(DT)
 
 options(shiny.error = browser)
 # Define server logic required to generate GSG
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
 
 
 output$map <- renderLeaflet({
-        leaflet() %>%
-          addProviderTiles("OpenStreetMap")
+  leaflet() %>%
+    addTiles() %>%
+    addWMSTiles(
+      "http://globalforestwatch-624153201.us-west-1.elb.amazonaws.com:80/arcgis/services/TreeCover2000/ImageServer/WMSServer",
+      layers="0",
+      options = WMSTileOptions(format = "image/png", transparent = TRUE)
+    ) #%>% addWMSLegend("http://globalforestwatch-624153201.us-west-1.elb.amazonaws.com:80/arcgis/services/TreeCover2000/ImageServer/WMSServer?request=GetLegendGraphic%26version=1.3.0%26format=image/png%26layer=0",
+      #position = 'bottomright')
+
 
 })
 
-
+observeEvent(input$reset_input,{
+  shinyjs::reset("settings")
+})
 
 observeEvent(
     # Take a dependency on input$goButton
@@ -95,7 +105,7 @@ observeEvent(
         clearShapes() %>%
 
         addPolygons(data = bnd, color = "#444444", weight = 1, smoothFactor = 0.5,
-                    opacity = 0.4, fillOpacity = 0.5) %>%
+                    opacity = 0.3, fillOpacity = 0.5) %>%
 
         addCircles(data=gsg, weight = 3, radius=40,
                   color="#CD0000", stroke = TRUE, fillOpacity = 0.9) %>%
@@ -114,7 +124,7 @@ observeEvent(
       output$mytable <- DT::renderDataTable(
         DT::datatable(as.data.frame(gsg), options = list(pageLength = 25))
       )
-
+      updateNavbarPage(session, "nav", selected="gomap")
 
       }
     })
