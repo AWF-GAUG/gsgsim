@@ -42,7 +42,11 @@ observeEvent(
     # Take a dependency on input$goButton
     input$go, {
 
-    withProgress(message = 'Work in progress', value = 0,{
+      progress <- Progress$new(session, min=1, max=4)
+      on.exit(progress$close())
+
+      progress$set(value = 1, message = 'Calculation in progress',
+                   detail = 'Downloading boundary...')
 
       # load selected aoi as boundary
       in_bnd <- input$aoi
@@ -68,16 +72,13 @@ observeEvent(
             })
       }
 
-
-
-      # Increment the progress bar, and update the detail text.
-      incProgress(1/3, detail = paste("Dowloading boundary (can take a while...)"), 1)
-
-
       bnd <- isolate(load_boundary(x = getaoi,
                                    country_code = input$country_code,
                                    adm_level = 0));
 
+      # Increment the progress bar, and update the detail text.
+      progress$set(value = 2, message = 'Calculation in progress',
+                   detail = 'initializing GSG generation...')
 
       # generate GSG based on inputs from ui.R
       # isolate () to avoid dependency on input$dist (but reactive on button)
@@ -96,8 +97,11 @@ observeEvent(
       }else{
 
       center=gCentroid(gsg)
+
+
       # Increment the progress bar, and update the detail text.
-      incProgress(2/3, detail = paste("Generating GSG"), 2)
+      progress$set(value = 3, message = 'Calculation in progress',
+                   detail = 'Gerenating outputs...')
 
 
       # draw a map with generated GSG
@@ -117,17 +121,19 @@ observeEvent(
         #          lng2 = ymin(gsg),lat2 = ymin(gsg))
 
 
-      # Increment the progress bar, and update the detail text.
-      incProgress(3/3, detail = paste("Plotting"), 3)
+      updateNavbarPage(session, "nav", selected="gomap")
 
       # Generate Data Table
       output$mytable <- DT::renderDataTable(
         DT::datatable(as.data.frame(gsg), options = list(pageLength = 25))
       )
-      updateNavbarPage(session, "nav", selected="gomap")
+
+      # Increment the progress bar, and update the detail text.
+      progress$set(value = 4, message = 'Calculation in progress',
+                   detail = 'Plotting the GSG...')
 
       }
-    })
+
 
       ### Export GSG ###
 
