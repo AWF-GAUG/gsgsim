@@ -25,24 +25,23 @@ navbarPage("Global Sampling Grid", id="nav",
 
   div(class="outer",
     tags$head(
-
       # Include our custom CSS
       includeCSS("styles.css")
-    ),
-   leafletOutput("map", height = "100%", width = "100%")
-  )
+      ),
+      leafletOutput("map", height = "100%", width = "100%")
+    )
   ),
 
   tabPanel("Data Explorer",
          DT::dataTableOutput('mytable')
   ),
 
-  tabPanel("GSG Settings",
+  tabPanel("Generate GSG",
            div(id="settings",
             fluidRow(
               column(4,
                      # Inputs
-                     h4("Generate GSG"),
+                     h4("GSG Settings"),
                      # Example input country code
                      selectInput("country_code", "Select countries",
                                  c("World", raster::ccodes()[, 1]),
@@ -63,6 +62,7 @@ navbarPage("Global Sampling Grid", id="nav",
                                accept=c('.shp','.dbf','.sbn','.sbx','.shx',".prj",".kml"),
                                multiple=TRUE)
               ),
+
               column(4,
                      # grid distance in km
                      numericInput("dist", "Grid distance:", 250),
@@ -83,7 +83,8 @@ navbarPage("Global Sampling Grid", id="nav",
                      # Button "generate"
                      actionButton("reset_input", "Reset inputs"),
                      actionButton("go", "Generate")
-                     ),
+              ),
+
               column(4,
                      h4("Download GSG"),
                      textOutput("text1"),
@@ -93,8 +94,7 @@ navbarPage("Global Sampling Grid", id="nav",
                      # Button "download"
 
                      downloadButton("download", "Download")
-
-                     )
+              )
             ))
-
-)))
+  )
+))
