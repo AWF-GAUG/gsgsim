@@ -1,16 +1,25 @@
 Package: gsgsim
 Type: Package
 Title: Gloabal Sampling Grid simulation framework
-Version: 0.1.0
-Author: Lutz Fehrmann, Collins Kurkunda, Paul Magdon, Sebastian Schnell
-Maintainer: <Sebastian.Schnell@outlook.de>
+Version: 1.0
+Author: Lutz Fehrmann [aut, cre], 
+        Nils Noelke [aut],
+        Collins Kurkunda [aut], 
+        Paul Magdon [aut], 
+        Sebastian Schnell [aut]
+Authors@R: c(person("Lutz", "Fehrmann", role = c("aut", "cre"), email = "lfehrma@gwgd.de"),
+             person("Nils", "Noelke", role = "aut", email = "nnoelke@gwdg.de"),
+             person("Collins", "Kurkunda", role = "aut", email = "collins.kukunda@forst.uni-goettingen.de"),
+             person("Paul", "Magdon", role = "aut", email = "pmagdon@gwdg.de"),
+             person("Sebastian", "Schnell", role = "aut", email = "Sebastian.Schnell@outlook.de"))
+Maintainer: <lfehrma@gwdg.de>
 Description: The package provides utilities for simulating the assessment of
     land-cover state and change through a global sampling grid. The main focus is
     on studying the influence of particular desing parameters, such as sample size
     and the size and shape of different observation units, on the outcome of sample-
     based land-cover assessments.
-URL: https://github.com/sebschnell/gsgsim
-License: 
+URL: https://github.com/AWF-GAUG/gsgsim
+License: GPLv3
 Encoding: UTF-8
 Depends: 
   data.table,
@@ -19,6 +28,8 @@ Depends:
   sp,
   rgeos,
   rgdal,
-  maptools
+  maptools,
+  shiny,
+  shinyjs
 LazyData: true
 RoxygenNote: 6.0.1
