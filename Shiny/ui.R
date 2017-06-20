@@ -29,7 +29,7 @@ navbarPage("Global Sampling Grid", id="nav",
       # Include our custom CSS
       includeCSS("styles.css")
     ),
-   leafletOutput("map")
+   leafletOutput("map", height = "100%", width = "100%")
   )
   ),
 

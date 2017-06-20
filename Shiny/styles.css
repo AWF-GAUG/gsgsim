@@ -1,23 +1,14 @@
 /* for computer */
 div.outer {
-     height: calc(100vh - 80px);
-     padding: 0;
-     margin: 0;
-     min-height: 500px
-}
-
-@media all and (max-width:768px){
-/* for mobile */
-div.outer  {
   position: fixed;
-  top: 70px;
+  top: 41px;
   left: 0;
   right: 0;
   bottom: 0;
   overflow: hidden;
   padding: 0;
 }
-}
+
 
 /* Customize fonts */
 body, label, input, button, select {
@@ -57,5 +48,4 @@ h1, h2, h3, h4 { font-weight: 400; }
 
 button#reset_input:hover {
   background-color:#da1313;
-}
 }
