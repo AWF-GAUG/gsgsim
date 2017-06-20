@@ -24,6 +24,7 @@ shinyServer(function(input, output, session) {
 output$map <- renderLeaflet({
   leaflet() %>%
     addTiles() %>%
+    setView(lng = 0, lat = 20, zoom = 3)%>%
     addWMSTiles(
       "http://globalforestwatch-624153201.us-west-1.elb.amazonaws.com:80/arcgis/services/TreeCover2000/ImageServer/WMSServer",
       layers="0",
