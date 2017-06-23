@@ -31,7 +31,8 @@ ui <- fluidPage(
       div(
         class = "outer",
         tags$head(# Include our custom CSS
-          includeCSS("styles.css")),
+          includeCSS("styles.css")
+          ),
 
         leafletOutput("map", height = "100%", width = "100%")
       )
@@ -39,6 +40,7 @@ ui <- fluidPage(
 
     tabPanel("Data Explorer",
              DT::dataTableOutput('mytable')),
+
 
     tabPanel("Generate GSG",
 

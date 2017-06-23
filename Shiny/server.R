@@ -24,11 +24,26 @@ shinyServer(function(input, output, session) {
   output$map <- renderLeaflet({
     leaflet() %>%
       addTiles() %>%
+
+      addScaleBar(position = "bottomleft") %>%
+
+      addMeasure(
+        position = "bottomleft",
+        primaryLengthUnit = "kilometers",
+        secondaryLengthUnit = "meters",
+        primaryAreaUnit = "hectares"
+      ) %>%
+
+
+
+      addMiniMap() %>%
+
       setView(lng = 0, lat = 20, zoom = 3) %>%
+
       addWMSTiles("http://globalforestwatch-624153201.us-west-1.elb.amazonaws.com:80/arcgis/services/TreeCover2000/ImageServer/WMSServer",
         layers = "0",
         options = WMSTileOptions(format = "image/png", transparent = TRUE),
-        attribution = 'test'
+        attribution = 'Hansen/UMD/Google/USGS/NASA, accessed through Global Forest Watch'
       ) #%>%
 
       #addWMSLegend("http://globalforestwatch-624153201.us-west-1.elb.amazonaws.com:80/arcgis/services/TreeCover2000/ImageServer/WMSServer?request=GetLegendGraphic%26version=1.3.0%26format=image/png%26layer=0",
@@ -131,6 +146,7 @@ shinyServer(function(input, output, session) {
             opacity = 0.3,
             fillOpacity = 0.5
           ) %>%
+
 
           addCircles(
             data = gsg,
