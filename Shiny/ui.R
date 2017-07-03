@@ -42,13 +42,14 @@ ui <- fluidPage(
              DT::dataTableOutput('mytable')),
 
 
-    tabPanel("Generate GSG",
+    tabPanel("Generate/ download GSG",
 
              div(id = "settings",
                  fluidRow(
                    column(4,
+                          wellPanel(
                      # Inputs
-                     h4("GSG Settings"),
+                     h4("GSG Area"),
 
                      # Select country code
                      selectInput(
@@ -84,9 +85,11 @@ ui <- fluidPage(
                        accept = c('.shp', '.dbf', '.sbn', '.sbx', '.shx', ".prj", ".kml"),
                        multiple = TRUE
                      )
-                   ),
+                   )),
 
                    column(4,
+                          wellPanel(
+                            h4("GSG settings"),
                      # grid distance in km
                      numericInput("dist", "Grid distance:", 250),
 
@@ -116,9 +119,10 @@ ui <- fluidPage(
                      # Button "generate"
                      actionButton("reset_input", "Reset inputs"),
                      actionButton("go", "Generate")
-                   ),
+                   )),
 
                    column(4,
+                          wellPanel(
                      h4("Download GSG"),
                      textOutput("text1"),
                      selectInput(
@@ -131,7 +135,10 @@ ui <- fluidPage(
                      # Button "download"
                      downloadButton("download", "Download")
 
-                   )
-                 )))
+                   ))
+                 )),
+             #
+             plotOutput("se_plot", width = 450)
+             )
   )
 )

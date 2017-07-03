@@ -130,6 +130,23 @@ shinyServer(function(input, output, session) {
                      message = 'Calculation in progress',
                      detail = 'Gerenating outputs...')
 
+        # Plot se_plot
+        output$se_plot <- renderPlot({
+          se_binomial <- function(p){
+            se <- 100*sqrt((p*(1-p))/(length(gsg)-1))/p
+            return(se)
+          }
+
+          curve(se_binomial,
+                from=0.001,
+                to=1,
+                main = "Expected standard errors for grid points (no clusters)",
+                xlab="Expected area proportion of target class",
+                #log= "x",
+                ylab="Relative standard error (%)"
+          )
+        })
+
 
         ## Interactive Map ###########################################
 
