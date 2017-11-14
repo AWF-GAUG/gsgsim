@@ -196,6 +196,9 @@ shinyServer(function(input, output, session) {
       # Retrieve id (and lat long) of selected row in datatable (to zoom to this point)
       id <- input$datatable_row_last_clicked
 
+      # test if id is retriefed
+      message(id)
+
       # Update maps
 
 
