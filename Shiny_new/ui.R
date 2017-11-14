@@ -7,6 +7,14 @@
 
 library(shiny)
 library(shinydashboard)
+library(plotGoogleMaps)
+library(shinyjs)
+library(gsgsim)
+library(leaflet)
+library(leaflet.minicharts)
+library(raster)
+library(DT)
+
 
 ui <- dashboardPage(
   dashboardHeader(title = "GSG"),

@@ -1,15 +1,3 @@
-
-
-
-library(shiny)
-library(plotGoogleMaps)
-library(shinyjs)
-library(gsgsim)
-library(leaflet)
-library(leaflet.minicharts)
-library(raster)
-library(DT)
-
 #########################################################
 # global defenition of functions to store and retrieve data (see http://shiny.rstudio.com/articles/persistent-data-storage.html)
 # functions should later be moved to utilities or "global.R"
