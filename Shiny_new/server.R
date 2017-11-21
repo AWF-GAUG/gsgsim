@@ -34,13 +34,72 @@ shinyServer(function(input, output, session) {
               zoom = 2)
   })
 
+  # Update preview map 
+
+  #' Function for setting map section with sampling grid or resetting it
+  #' without grid.
+  #' @param aoi Use an aoi as boundary, defaults to NULL
+  #' @param addGrid If TRUE, sets sampling raster
+
+  setPreview <- function(aoi=NULL, addGrid=FALSE){ 
+    
+    # bnd initialization doesn't need isolate in this context
+    bnd <- load_boundary(
+	x = aoi, 
+	country_code = input$country_code,
+	adm_level = 0
+      )
+
+    gsg <- isolate(gen_gsg(input$dist, bnd)) 
+
+    leafletProxy("preview", data = gsg) %>%
+    fitBounds(gsg@bbox[1, 1] - 1, gsg@bbox[2, 1] - 1, gsg@bbox[1, 2] +
+      1, gsg@bbox[2, 2] + 1) %>%
+    clearShapes() 
+
+    # Update map for assessment
+    leafletProxy("googlemap", data = gsg) %>%
+      fitBounds(gsg@bbox[1,1]-1, gsg@bbox[2,1]-1, gsg@bbox[1,2]+1, gsg@bbox[2,2]+1) %>%
+      clearShapes() %>%
+
+      addAwesomeMarkers(data = gsg)
+
+      if(addGrid==TRUE){
+	leafletProxy("preview", data = gsg) %>%
+	fitBounds(gsg@bbox[1, 1] - 1, gsg@bbox[2, 1] - 1, gsg@bbox[1, 2] +
+	  1, gsg@bbox[2, 2] + 1) %>%
+	clearShapes() %>% 
+	
+	addPolygons(
+	  data = bnd,
+          weight = 1,
+          smoothFactor = 0.5,
+          opacity = 0.3,
+          fillOpacity = 0.5
+        ) %>%
+
+
+        addCircles(
+          data = gsg,
+          weight = 3,
+          radius = 40,
+          color = "#CD0000",
+          stroke = TRUE,
+          fillOpacity = 0.9
+        )
+      }
+  }
 
 
   ## Grid generation #################
-
   # Reset grid settings
   observeEvent(input$reset_input, {
-    shinyjs::reset(id = "generate")
+
+    # removed `reset` due to undesired behavior
+    # (setting country to previously selected)
+    #shinyjs::reset(id = "generate")  
+
+    setPreview() 
   })
 
   ### Enable generate button only when aoi is selected
@@ -48,17 +107,14 @@ shinyServer(function(input, output, session) {
     toggleState(id = "go", condition = !is.null(input$country_code) | !is.null(input$aoi))
   })
 
-
-
-
   observeEvent(# Take a dependency on input$goButton. All calculations start after click only
-
 
     input$go, {
       # load selected aoi as boundary
       in_bnd <- input$aoi
 
-      # getaoi depending on file format (currently only KML is used, but shp is possible. Radiobuttons for inputformat are commented in ui)
+      # getaoi depending on file format (currently only KML is used, but shp is possible. 
+      # Radiobuttons for inputformat are commented in ui)
       if (is.null(in_bnd)) {
         getaoi <- NULL
       } else {
@@ -84,69 +140,8 @@ shinyServer(function(input, output, session) {
                })
       }
 
-      bnd <- isolate(load_boundary(
-        x = getaoi,
-        country_code = input$country_code,
-        adm_level = 0
-      ))
-
-      # generate GSG based on inputs from ui.R
-      # isolate () to avoid dependency on input$dist (but reactive on button)
-
-      gsg <- isolate(gen_gsg(input$dist, bnd))
-
-      # Show resulting sample size in valueBox
-      output$samplesize = renderInfoBox(infoBox(
-        length(gsg),
-        title = "sample size",
-        icon = icon("map-pin")
-      ))
-
       # Update preview map
-
-      leafletProxy("preview", data = gsg) %>%
-        fitBounds(gsg@bbox[1, 1] - 1, gsg@bbox[2, 1] - 1, gsg@bbox[1, 2] +
-                    1, gsg@bbox[2, 2] + 1) %>%
-        clearShapes() %>%
-
-        addPolygons(
-          data = bnd,
-          #color = "#444444",
-          weight = 1,
-          smoothFactor = 0.5,
-          opacity = 0.3,
-          fillOpacity = 0.5
-        ) %>%
-
-
-        addCircles(
-          data = gsg,
-          weight = 3,
-          radius = 40,
-          color = "#CD0000",
-          stroke = TRUE,
-          fillOpacity = 0.9
-        )
-
-      # Update map for assessment
-      leafletProxy("googlemap", data = gsg) %>%
-        fitBounds(gsg@bbox[1,1]-1, gsg@bbox[2,1]-1, gsg@bbox[1,2]+1, gsg@bbox[2,2]+1) %>%
-        clearShapes() %>%
-
-        addAwesomeMarkers(data = gsg)
-
-
-      # addCircles(
-      #   data = gsg,
-      #   weight = 3,
-      #   radius = 40,
-      #   color = "#CD0000",
-      #   stroke = TRUE,
-      #   fillOpacity = 0.9
-      # )
-
-
-
+      setPreview(aoi=getaoi, addGrid=TRUE)
 
       ### Downloading the kml file #######
 
@@ -167,25 +162,6 @@ shinyServer(function(input, output, session) {
       )
 
 
-      # # Plot se_plot
-      # output$se_plot <- renderPlot({
-      #   se_binomial <- function(p){
-      #     se <- 100*sqrt((p*(1-p))/(length(gsg)-1))/p
-      #     return(se)
-      #   }
-      #
-      #   curve(se_binomial,
-      #         from=0.001,
-      #         to=1,
-      #         main = "Expected standard errors for grid points (no clusters)",
-      #         xlab="Expected area proportion of target class",
-      #         #log= "x",
-      #         ylab="Relative standard error (%)"
-      #   )
-      # })
-
-
-
       # Generate Data Table for Data explorer
 
       output$datatable <- DT::renderDataTable(DT::datatable(as.data.frame(gsg), options = list(pageLength = 25), selection = 'single'))
@@ -196,7 +172,7 @@ shinyServer(function(input, output, session) {
       # Retrieve id (and lat long) of selected row in datatable (to zoom to this point)
       id <- input$datatable_row_last_clicked
 
-      # test if id is retriefed
+      # test if id is retrived
       message(id)
 
       # Update maps
