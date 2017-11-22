@@ -18,9 +18,6 @@ loadData <- function() {
 }
 ##########################################################
 
-
-
-
 shinyServer(function(input, output, session) {
 
 
@@ -108,6 +105,7 @@ shinyServer(function(input, output, session) {
   })
 
   observeEvent(# Take a dependency on input$goButton. All calculations start after click only
+
 
     input$go, {
       # load selected aoi as boundary
