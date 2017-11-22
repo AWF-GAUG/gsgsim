@@ -37,6 +37,8 @@ shinyServer(function(input, output, session) {
   #' without grid.
   #' @param aoi Use an aoi as boundary, defaults to NULL
   #' @param addGrid If TRUE, sets sampling raster
+  #' @return grd 
+  # TODO: what kind of object is the grd actually?
 
   setPreview <- function(aoi=NULL, addGrid=FALSE){ 
     
@@ -47,24 +49,24 @@ shinyServer(function(input, output, session) {
 	adm_level = 0
       )
 
-    gsg <- isolate(gen_gsg(input$dist, bnd)) 
+    grd <- isolate(gen_grd(input$dist, bnd)) 
 
-    leafletProxy("preview", data = gsg) %>%
-    fitBounds(gsg@bbox[1, 1] - 1, gsg@bbox[2, 1] - 1, gsg@bbox[1, 2] +
-      1, gsg@bbox[2, 2] + 1) %>%
+    leafletProxy("preview", data = grd) %>%
+    fitBounds(grd@bbox[1, 1] - 1, grd@bbox[2, 1] - 1, grd@bbox[1, 2] +
+      1, grd@bbox[2, 2] + 1) %>%
     clearShapes() 
 
     # Update map for assessment
-    leafletProxy("googlemap", data = gsg) %>%
-      fitBounds(gsg@bbox[1,1]-1, gsg@bbox[2,1]-1, gsg@bbox[1,2]+1, gsg@bbox[2,2]+1) %>%
+    leafletProxy("googlemap", data = grd) %>%
+      fitBounds(grd@bbox[1,1]-1, grd@bbox[2,1]-1, grd@bbox[1,2]+1, grd@bbox[2,2]+1) %>%
       clearShapes() %>%
 
-      addAwesomeMarkers(data = gsg)
+      addAwesomeMarkers(data = grd)
 
       if(addGrid==TRUE){
-	leafletProxy("preview", data = gsg) %>%
-	fitBounds(gsg@bbox[1, 1] - 1, gsg@bbox[2, 1] - 1, gsg@bbox[1, 2] +
-	  1, gsg@bbox[2, 2] + 1) %>%
+	leafletProxy("preview", data = grd) %>%
+	fitBounds(grd@bbox[1, 1] - 1, grd@bbox[2, 1] - 1, grd@bbox[1, 2] +
+	  1, grd@bbox[2, 2] + 1) %>%
 	clearShapes() %>% 
 	
 	addPolygons(
@@ -77,7 +79,7 @@ shinyServer(function(input, output, session) {
 
 
         addCircles(
-          data = gsg,
+          data = grd,
           weight = 3,
           radius = 40,
           color = "#CD0000",
@@ -85,6 +87,8 @@ shinyServer(function(input, output, session) {
           fillOpacity = 0.9
         )
       }
+
+      return(grd)
   }
 
 
@@ -139,7 +143,7 @@ shinyServer(function(input, output, session) {
       }
 
       # Update preview map
-      setPreview(aoi=getaoi, addGrid=TRUE)
+      gsg <- setPreview(aoi=getaoi, addGrid=TRUE)
 
       ### Downloading the kml file #######
 
