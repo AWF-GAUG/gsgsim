@@ -31,30 +31,30 @@ shinyServer(function(input, output, session) {
               zoom = 2)
   })
 
-  # Update preview map 
+  # Update preview map
 
   #' Function for setting map section with sampling grid or resetting it
   #' without grid.
   #' @param aoi Use an aoi as boundary, defaults to NULL
   #' @param addGrid If TRUE, sets sampling raster
-  #' @return grd 
+  #' @return grd
   # TODO: what kind of object is the grd actually?
 
-  setPreview <- function(aoi=NULL, addGrid=FALSE){ 
-    
+  setPreview <- function(aoi=NULL, addGrid=FALSE){
+
     # bnd initialization doesn't need isolate in this context
     bnd <- load_boundary(
-	x = aoi, 
+	x = aoi,
 	country_code = input$country_code,
 	adm_level = 0
       )
 
-    grd <- isolate(gen_grd(input$dist, bnd)) 
+    grd <- isolate(gen_gsg(input$dist, bnd))
 
     leafletProxy("preview", data = grd) %>%
     fitBounds(grd@bbox[1, 1] - 1, grd@bbox[2, 1] - 1, grd@bbox[1, 2] +
       1, grd@bbox[2, 2] + 1) %>%
-    clearShapes() 
+    clearShapes()
 
     # Update map for assessment
     leafletProxy("googlemap", data = grd) %>%
@@ -67,8 +67,8 @@ shinyServer(function(input, output, session) {
 	leafletProxy("preview", data = grd) %>%
 	fitBounds(grd@bbox[1, 1] - 1, grd@bbox[2, 1] - 1, grd@bbox[1, 2] +
 	  1, grd@bbox[2, 2] + 1) %>%
-	clearShapes() %>% 
-	
+	clearShapes() %>%
+
 	addPolygons(
 	  data = bnd,
           weight = 1,
@@ -98,9 +98,9 @@ shinyServer(function(input, output, session) {
 
     # removed `reset` due to undesired behavior
     # (setting country to previously selected)
-    #shinyjs::reset(id = "generate")  
+    #shinyjs::reset(id = "generate")
 
-    setPreview() 
+    setPreview()
   })
 
   ### Enable generate button only when aoi is selected
@@ -112,10 +112,11 @@ shinyServer(function(input, output, session) {
 
 
     input$go, {
+
       # load selected aoi as boundary
       in_bnd <- input$aoi
 
-      # getaoi depending on file format (currently only KML is used, but shp is possible. 
+      # getaoi depending on file format (currently only KML is used, but shp is possible.
       # Radiobuttons for inputformat are commented in ui)
       if (is.null(in_bnd)) {
         getaoi <- NULL
@@ -188,6 +189,8 @@ shinyServer(function(input, output, session) {
   ## Map for assessment ############
   ## Initial map (update after grid is generated, see leafletProxy)
   output$googlemap <- renderLeaflet({
+    setPreview()
+
     leaflet() %>%
       #addProviderTiles(providers$Esri.NatGeoWorldMap) %>%
       addTiles(
