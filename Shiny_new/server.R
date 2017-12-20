@@ -20,6 +20,7 @@ loadData <- function() {
 
 shinyServer(function(input, output, session) {
 
+  attr.tab <- reactiveValues(lcc=data.frame(id=NA, trees=NA))
 
   ## Small preview map ############
   # Initial map (update after grid is generated, see leafletProxy)
@@ -167,24 +168,52 @@ shinyServer(function(input, output, session) {
 
       # Generate Data Table for Data explorer
 
-      output$datatable <- DT::renderDataTable(DT::datatable(as.data.frame(gsg), options = list(pageLength = 25), selection = 'single'))
+      output$datatable <- DT::renderDataTable(
+	      DT::datatable(as.data.frame(gsg), options = list(pageLength = 25),
+		      selection = 'single')) 
 
-      # Generate point list for navigation in "Assessment" (a short form of the data table)
-      output$pointlist <- DT::renderDataTable(DT::datatable(as.data.frame(gsg$`1:sum(idx)`, colnames("id")), options = list(pageLength = 5, searching = FALSE, filter = 'top'), selection = 'single'))
+      # Generate point list for navigation in "Assessment" (a short form of the 
+      # data table)
+      gsg.id <- gsg[['1:sum(idx)']]
 
-      # Retrieve id (and lat long) of selected row in datatable (to zoom to this point)
-      id <- input$datatable_row_last_clicked
+      output$pointlist <- DT::renderDataTable(DT::datatable(
+		      data.frame(ID=gsg.id), 
+		      options = list(pageLength = 5, 
+			      searching = FALSE, filter = 'top'), 
+		      selection = 'single'))
 
-      # test if id is retrived
-      message(id)
+      # update attribute table
+      attr.tab$lcc <- data.frame(id=gsg.id, 
+	      trees=factor('tree', levels=c('tree', 'no tree')))
 
+            # Retrieve id (and lat long) of selected row in datatable (to zoom to this point)
       # Update maps
 
-
-
-
-
     }) # ObserveEvent closed
+  
+  # when row is selected from pointlist, update
+  # variable selection
+  observeEvent(input$pointlist_rows_selected, { 
+
+	  #attr.tab$trees$id <- input$pointlist_row_last_clicked 
+	  ind <- input$pointlist_row_last_clicked 
+	  
+	  updateSelectInput(session, 'lcc_select', 
+		  label=paste('ID:', ind),
+		  choices=levels(attr.tab$lcc$trees))
+
+	    })
+
+  # when input is selected, update reactive value tables
+  observeEvent(input$lcc_select, {
+	  
+	  ind <- input$pointlist_row_last_clicked 
+	  attr.tab$lcc$trees[ind] <- input$lcc_select
+
+	  message(print(attr.tab$lcc))
+
+	    })
+
 
   ## Map for assessment ############
   ## Initial map (update after grid is generated, see leafletProxy)

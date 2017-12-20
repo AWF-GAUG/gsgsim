@@ -105,7 +105,10 @@ ui <- dashboardPage(
                 tabBox(id = "variables", width = 12,
                        title = "Assess variables",
                        selected = "Tab3",
-                       tabPanel("Land Cover Components (LCC)", "LCC variables here"),
+                       tabPanel("Land Cover Components (LCC)", 
+			       #verbatimTextOutput('lcc'),
+			       selectInput('lcc_select', 'Select point from list', NULL)
+			       ),
                        tabPanel("Land use / function attributes (LUA)", "Tab content 2"),
                        tabPanel("Landscape characteristics", "Note that when side=right, the tab order is reversed.")
                 )
