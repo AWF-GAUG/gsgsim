@@ -20,7 +20,15 @@ loadData <- function() {
 
 shinyServer(function(input, output, session) {
 
+  # reactive values for storing attributes
   attr.tab <- reactiveValues(lcc=data.frame(id=NA, trees=NA))
+
+  ### create standard markers
+  blueMarker <- makeIcon(
+    iconUrl='marker-icon.png',
+    shadowUrl='marker-shadow.png'
+    )
+
 
   ## Small preview map ############
   # Initial map (update after grid is generated, see leafletProxy)
@@ -38,16 +46,21 @@ shinyServer(function(input, output, session) {
   #' without grid.
   #' @param aoi Use an aoi as boundary, defaults to NULL
   #' @param addGrid If TRUE, sets sampling raster
+  #' @param markers Optional markers for googleMap update
   #' @return grd
   # TODO: what kind of object is the grd actually?
 
-  setPreview <- function(aoi=NULL, addGrid=FALSE){
+  setPreview <- function(aoi=NULL, addGrid=FALSE, markers=NULL){
+
+    # check if markers are present and use blue marker if not
+    if(is.null(markers))
+      markers <- blueMarker
 
     # bnd initialization doesn't need isolate in this context
     bnd <- load_boundary(
-	x = aoi,
-	country_code = input$country_code,
-	adm_level = 0
+    x = aoi,
+    country_code = input$country_code,
+    adm_level = 0
       )
 
     grd <- isolate(gen_gsg(input$dist, bnd))
@@ -62,16 +75,16 @@ shinyServer(function(input, output, session) {
       fitBounds(grd@bbox[1,1]-1, grd@bbox[2,1]-1, grd@bbox[1,2]+1, grd@bbox[2,2]+1) %>%
       clearShapes() %>%
 
-      addAwesomeMarkers(data = grd)
+      addMarkers(data = grd, icon=markers)
 
       if(addGrid==TRUE){
-	leafletProxy("preview", data = grd) %>%
-	fitBounds(grd@bbox[1, 1] - 1, grd@bbox[2, 1] - 1, grd@bbox[1, 2] +
-	  1, grd@bbox[2, 2] + 1) %>%
-	clearShapes() %>%
+    leafletProxy("preview", data = grd) %>%
+    fitBounds(grd@bbox[1, 1] - 1, grd@bbox[2, 1] - 1, grd@bbox[1, 2] +
+      1, grd@bbox[2, 2] + 1) %>%
+    clearShapes() %>%
 
-	addPolygons(
-	  data = bnd,
+    addPolygons(
+      data = bnd,
           weight = 1,
           smoothFactor = 0.5,
           opacity = 0.3,
@@ -169,22 +182,22 @@ shinyServer(function(input, output, session) {
       # Generate Data Table for Data explorer
 
       output$datatable <- DT::renderDataTable(
-	      DT::datatable(as.data.frame(gsg), options = list(pageLength = 25),
-		      selection = 'single')) 
+          DT::datatable(as.data.frame(gsg), options = list(pageLength = 25),
+              selection = 'single')) 
 
       # Generate point list for navigation in "Assessment" (a short form of the 
       # data table)
       gsg.id <- gsg[['1:sum(idx)']]
 
       output$pointlist <- DT::renderDataTable(DT::datatable(
-		      data.frame(ID=gsg.id), 
-		      options = list(pageLength = 5, 
-			      searching = FALSE, filter = 'top'), 
-		      selection = 'single'))
+              data.frame(ID=gsg.id), 
+              options = list(pageLength = 5, 
+                  searching = FALSE, filter = 'top'), 
+              selection = 'single'))
 
       # update attribute table
       attr.tab$lcc <- data.frame(id=gsg.id, 
-	      trees=factor('tree', levels=c('tree', 'no tree')))
+          trees=factor('tree', levels=c('tree', 'no tree')))
 
             # Retrieve id (and lat long) of selected row in datatable (to zoom to this point)
       # Update maps
@@ -195,24 +208,36 @@ shinyServer(function(input, output, session) {
   # variable selection
   observeEvent(input$pointlist_rows_selected, { 
 
-	  #attr.tab$trees$id <- input$pointlist_row_last_clicked 
-	  ind <- input$pointlist_row_last_clicked 
-	  
-	  updateSelectInput(session, 'lcc_select', 
-		  label=paste('ID:', ind),
-		  choices=levels(attr.tab$lcc$trees))
+    # update id for attribute selection 
+    ind <- input$pointlist_row_last_clicked 
+    
+    updateSelectInput(session, 'lcc_select', 
+      label=paste('ID:', ind),
+      choices=levels(attr.tab$lcc$trees))
 
-	    })
+    # update markers (highlight selected point)
+    n <- 1:nrow(attr.tab$lcc) # nrow of attribute table 
+
+    # create marker with yellow marker for selected point 
+    highlightMarker <- makeIcon(
+      # if id of selected row matches attribute table row, set yellow marker
+      iconUrl=ifelse(n==ind, 'marker-icon-yellow.png', 'marker-icon.png'),
+      shadowUrl='marker-shadow.png'
+      )
+
+    setPreview(addGrid=TRUE, markers=highlightMarker)
+    
+    }) 
 
   # when input is selected, update reactive value tables
   observeEvent(input$lcc_select, {
-	  
-	  ind <- input$pointlist_row_last_clicked 
-	  attr.tab$lcc$trees[ind] <- input$lcc_select
+      
+    ind <- input$pointlist_row_last_clicked 
+    attr.tab$lcc$trees[ind] <- input$lcc_select 
+    
+    message(print(attr.tab$lcc))
 
-	  message(print(attr.tab$lcc))
-
-	    })
+        })
 
 
   ## Map for assessment ############
