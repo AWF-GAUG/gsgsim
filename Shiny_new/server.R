@@ -189,11 +189,36 @@ shinyServer(function(input, output, session) {
       # data table)
       gsg.id <- gsg[['1:sum(idx)']]
 
-      output$pointlist <- DT::renderDataTable(DT::datatable(
-              data.frame(ID=gsg.id), 
-              options = list(pageLength = 5, 
-                  searching = FALSE, filter = 'top'), 
-              selection = 'single'))
+      output$pointlist <- DT::renderDataTable({
+
+				pnts <- cbind(gsg.id, as.data.frame(gsg)[,c('X','Y')])
+				names(pnts) <- c('id', 'lon', 'lat') 
+				message(str(pnts))
+				
+				d <- data.frame(zoom = paste('<a class="go-map" href="" data-lat="', 
+							pnts$lat, '" data-lon="', pnts$lon, 
+							'"><i class="fa fa-crosshairs"></i></a>', sep=""))
+				
+				# this creates a json object and returns its url
+				# I think
+				action <- DT::dataTableAjax(session, d)
+
+				#DT::datatable(d, options = list(ajax = list(url = action)), 
+				#	escape = FALSE)
+
+				# this creates a data table again from the json object? 
+				DT::datatable(d, options = list(ajax = list(url = action), 
+							pageLength = 5, searching = FALSE, 
+						selection = 'single'), escape = FALSE)
+
+				#DT::datatable( 
+				#	
+				#	data.frame(ID=gsg.id), 
+        #  options = list(pageLength = 5, 
+        #      searching = FALSE, filter = 'top'), 
+        #  selection = 'single')
+
+			})
 
       # update attribute table
       attr.tab$lcc <- data.frame(id=gsg.id, 
@@ -238,6 +263,25 @@ shinyServer(function(input, output, session) {
     message(print(attr.tab$lcc))
 
         })
+
+	# observer handling zoom when goto button is clicked
+	observe({
+	   if (is.null(input$goto))
+	     return() 
+	   message('Goto button clicked') 
+	   
+	   isolate({
+	     dst <- 0.5
+	     lat <- input$goto$lat
+	     lon <- input$goto$lon
+
+		 message(paste('lat =', lat))
+		 message(paste('lon =', lon))
+
+	     leafletProxy("googlemap") %>% 
+		 fitBounds(lon - dst, lat - dst, lon + dst, lat + dst)
+	   })
+	 })
 
 
   ## Map for assessment ############

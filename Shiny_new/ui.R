@@ -14,6 +14,7 @@ library(leaflet)
 library(leaflet.minicharts)
 library(raster)
 library(DT)
+library(dplyr)
 
 
 ui <- dashboardPage(
@@ -88,6 +89,11 @@ ui <- dashboardPage(
       ), # tab generate closed
 
       tabItem("assessment",
+
+				div(class='outer',
+					tags$head(includeScript('gomap.js')) # includes gomap?
+					), 
+
               fluidRow(
                 box(id = "mapwindow", width = 8, height = "60vh",
                     leafletOutput('googlemap', height = "58vh")
@@ -97,7 +103,8 @@ ui <- dashboardPage(
 
                 box(id = "pointlist", width = 4, height = "60vh",
                     title = "Point list",
-                    DT::dataTableOutput('pointlist')
+                    DT::dataTableOutput('pointlist'),
+										icon('crosshair')
                 )
               ),
 
