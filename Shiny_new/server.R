@@ -16,20 +16,22 @@ loadData <- function() {
     responses
   }
 }
+
 ##########################################################
 
 shinyServer(function(input, output, session) {
+	
+	# Cleanup routine
+	cleanupOnExit <- session$onSessionEnded(function(){
+		message('Exit')
+})
+
 
   # reactive values for storing attributes
-  attr.tab <- reactiveValues(lcc=data.frame(id=NA, trees=NA))
+  attr.tab <- reactiveValues(gsg=NULL, bnd=NULL, 
+		lcc=data.frame(id=NA, trees=NA))
 
-  ### create standard markers
-  blueMarker <- makeIcon(
-    iconUrl='marker-icon.png',
-    shadowUrl='marker-shadow.png'
-    )
-
-
+  
   ## Small preview map ############
   # Initial map (update after grid is generated, see leafletProxy)
   output$preview <- renderLeaflet({
@@ -40,81 +42,70 @@ shinyServer(function(input, output, session) {
               zoom = 2)
   })
 
-  # Update preview map
+  ## Map for assessment ############
+  ## Initial map (update after grid is generated, see leafletProxy)
+  output$googlemap <- renderLeaflet({
 
-  #' Function for setting map section with sampling grid or resetting it
-  #' without grid.
-  #' @param aoi Use an aoi as boundary, defaults to NULL
-  #' @param addGrid If TRUE, sets sampling raster
-  #' @param markers Optional markers for googleMap update
-  #' @return grd
-  # TODO: what kind of object is the grd actually?
+		updateGoogleMap() # see description in the next function
 
-  setPreview <- function(aoi=NULL, addGrid=FALSE, markers=NULL){
+		message('Google Map created')
 
-    # check if markers are present and use blue marker if not
-    if(is.null(markers))
-      markers <- blueMarker
+    leaflet() %>%
+      #addProviderTiles(providers$Esri.NatGeoWorldMap) %>%
+      addTiles(
+        urlTemplate = "https://mts1.google.com/vt/lyrs=s&hl=en&src=app&x={x}&y={y}&z={z}&s=G",
+        attribution = 'Google'
+      ) 
+		
+	})
 
-    # bnd initialization doesn't need isolate in this context
-    bnd <- load_boundary(
-    x = aoi,
-    country_code = input$country_code,
-    adm_level = 0
-      )
+	# googlemap shows some strange behavior -- it is _only_ created
+	# when the assessment tab is clicked. If the google map is
+	# updated as usual by a simple call to leafletProxy on 
+	# click of the go button (which creates the grid), 
+	# it is overwritten by the creation of the
+	# empty map on changing to the assessment tab. As a 
+	# workaround, updating the map is part of the following
+	# reactive function which is included in the _creation_
+	# of the map above.
+	# It's not beautiful, as the empty map flashes up shortly
+	# after clicking the assessment tab, but it works.
 
-    grd <- isolate(gen_gsg(input$dist, bnd))
+	updateGoogleMap <- reactive({
 
-    leafletProxy("preview", data = grd) %>%
-    fitBounds(grd@bbox[1, 1] - 1, grd@bbox[2, 1] - 1, grd@bbox[1, 2] +
-      1, grd@bbox[2, 2] + 1) %>%
-    clearShapes()
+		# update googlemap
+		if(is.null(attr.tab$gsg))
+			return()
+		
+		message('Google Map updated')
 
-    # Update map for assessment
-    leafletProxy("googlemap", data = grd) %>%
-      fitBounds(grd@bbox[1,1]-1, grd@bbox[2,1]-1, grd@bbox[1,2]+1, grd@bbox[2,2]+1) %>%
-      clearShapes() %>%
-
-      addMarkers(data = grd, icon=markers)
-
-      if(addGrid==TRUE){
-    leafletProxy("preview", data = grd) %>%
-    fitBounds(grd@bbox[1, 1] - 1, grd@bbox[2, 1] - 1, grd@bbox[1, 2] +
-      1, grd@bbox[2, 2] + 1) %>%
-    clearShapes() %>%
-
-    addPolygons(
-      data = bnd,
-          weight = 1,
-          smoothFactor = 0.5,
-          opacity = 0.3,
-          fillOpacity = 0.5
-        ) %>%
-
-
-        addCircles(
-          data = grd,
-          weight = 3,
-          radius = 40,
-          color = "#CD0000",
-          stroke = TRUE,
-          fillOpacity = 0.9
-        )
-      }
-
-      return(grd)
-  }
-
-
+		### create standard markers
+		blue.marker <- makeIcon(
+			iconUrl='marker-icon.png',
+			shadowUrl='marker-shadow.png'
+			) 
+		
+		grd <- attr.tab$gsg
+		leafletProxy("googlemap", data = grd) %>%
+			fitBounds(grd@bbox[1,1]-1, grd@bbox[2,1]-1, grd@bbox[1,2]+1, 
+				grd@bbox[2,2]+1) %>% addMarkers(data = grd, icon=blue.marker) 
+	})
+	
   ## Grid generation #################
   # Reset grid settings
   observeEvent(input$reset_input, {
 
-    # removed `reset` due to undesired behavior
-    # (setting country to previously selected)
-    #shinyjs::reset(id = "generate")
+		# TODO: global variables should be set to zero here
+		# and tables in assessment and data exploerer removed
+		# accordingly
+		#attr.tab$gsg <- NULL
+		#attr.tab$<- NULL
 
-    setPreview()
+		leafletProxy('preview') %>% 
+			clearShapes()
+
+		leafletProxy('googlemap') %>% 
+			clearMarkers()
   })
 
   ### Enable generate button only when aoi is selected
@@ -122,6 +113,7 @@ shinyServer(function(input, output, session) {
     toggleState(id = "go", condition = !is.null(input$country_code) | !is.null(input$aoi))
   })
 
+	### Generate grid by click on 'go' button
   observeEvent(# Take a dependency on input$goButton. All calculations start after click only
 
 
@@ -157,8 +149,19 @@ shinyServer(function(input, output, session) {
                })
       }
 
-      # Update preview map
-      gsg <- setPreview(aoi=getaoi, addGrid=TRUE)
+      # bnd initialization doesn't need isolate in this context
+      attr.tab$bnd <- load_boundary(
+      x = getaoi,
+      country_code = input$country_code,
+      adm_level = 0
+        )
+			
+			# generate grid and save to reactive variable
+      attr.tab$gsg <- isolate(gen_gsg(input$dist, attr.tab$bnd)) 
+  
+			# TODO: temporary save of grd to gsg, 
+			# 'grd' to be replaced by attr$tab.grd successively!
+			#gsg <- attr.tab$gsg
 
       ### Downloading the kml file #######
 
@@ -171,7 +174,7 @@ shinyServer(function(input, output, session) {
           paste0("GSG", input$dist, ".kml")
         },
         content = function(file) {
-          writeOGR(gsg,
+          writeOGR(grd,
                    file,
                    layer = paste0("GSG", input$dist, "_KML"),
                    driver = "KML")
@@ -182,53 +185,66 @@ shinyServer(function(input, output, session) {
       # Generate Data Table for Data explorer
 
       output$datatable <- DT::renderDataTable(
-          DT::datatable(as.data.frame(gsg), options = list(pageLength = 25),
+          DT::datatable(as.data.frame(attr.tab$gsg), 
+						options = list(pageLength = 25),
               selection = 'single')) 
 
       # Generate point list for navigation in "Assessment" (a short form of the 
       # data table)
-      gsg.id <- gsg[['1:sum(idx)']]
+      gsg.id <- attr.tab$gsg[['1:sum(idx)']]
 
       output$pointlist <- DT::renderDataTable({
 
-				pnts <- cbind(gsg.id, as.data.frame(gsg)[,c('X','Y')])
+				pnts <- cbind(gsg.id, as.data.frame(attr.tab$gsg)[,c('X','Y')])
 				names(pnts) <- c('id', 'lon', 'lat') 
-				message(str(pnts))
-				
-				d <- data.frame(zoom = paste('<a class="go-map" href="" data-lat="', 
-							pnts$lat, '" data-lon="', pnts$lon, 
-							'"><i class="fa fa-crosshairs"></i></a>', sep=""))
-				
-				# this creates a json object and returns its url
-				# I think
-				action <- DT::dataTableAjax(session, d)
 
-				#DT::datatable(d, options = list(ajax = list(url = action)), 
-				#	escape = FALSE)
-
-				# this creates a data table again from the json object? 
-				DT::datatable(d, options = list(ajax = list(url = action), 
-							pageLength = 5, searching = FALSE, 
-						selection = 'single'), escape = FALSE)
-
-				#DT::datatable( 
-				#	
-				#	data.frame(ID=gsg.id), 
-        #  options = list(pageLength = 5, 
-        #      searching = FALSE, filter = 'top'), 
-        #  selection = 'single')
-
+				# datatable for point list
+				DT::datatable(data.frame(id=pnts$id, lon=round(pnts$lon, 3),
+						lat=round(pnts$lat, 3)), 
+					options = list(pageLength = 5, searching = FALSE), 
+					escape = FALSE,
+					selection='single', rownames=FALSE)
+			
 			})
 
       # update attribute table
       attr.tab$lcc <- data.frame(id=gsg.id, 
           trees=factor('tree', levels=c('tree', 'no tree')))
 
-            # Retrieve id (and lat long) of selected row in datatable (to zoom to this point)
-      # Update maps
-
     }) # ObserveEvent closed
+   
+
+	### Updating maps
+ 
+  # Update map for assessment
+	observe({
+		if(is.null(attr.tab$gsg) | is.null(attr.tab$bnd))
+			return()
+
+		grd <- attr.tab$gsg 
+		leafletProxy("preview", data = grd) %>%
+			fitBounds(grd@bbox[1, 1] - 1, grd@bbox[2, 1] - 1, 
+				grd@bbox[1, 2] + 1, grd@bbox[2, 2] + 1) %>%
+		clearShapes() %>% 
+		addPolygons(
+			data = attr.tab$bnd,
+			weight = 1,
+			smoothFactor = 0.5,
+			opacity = 0.3,
+			fillOpacity = 0.5
+			) %>%
   
+  
+    addCircles(
+      data = grd,
+      weight = 3,
+      radius = 40,
+      color = "#CD0000",
+      stroke = TRUE,
+      fillOpacity = 0.9
+    )
+	})
+ 
   # when row is selected from pointlist, update
   # variable selection
   observeEvent(input$pointlist_rows_selected, { 
@@ -250,7 +266,8 @@ shinyServer(function(input, output, session) {
       shadowUrl='marker-shadow.png'
       )
 
-    setPreview(addGrid=TRUE, markers=highlightMarker)
+		leafletProxy('googlemap') %>%
+			addMarkers(data = attr.tab$gsg, icon=highlightMarker)
     
     }) 
 
@@ -264,46 +281,51 @@ shinyServer(function(input, output, session) {
 
         })
 
+
 	# observer handling zoom when goto button is clicked
 	observe({
-	   if (is.null(input$goto))
+	   if (input$zoomToPoint==0)
 	     return() 
-	   message('Goto button clicked') 
-	   
-	   isolate({
-	     dst <- 0.5
-	     lat <- input$goto$lat
-	     lon <- input$goto$lon
+		 
+		 isolate({
+			 # get last selected row (should correspond to id)
+		   ind <- input$pointlist_row_last_clicked 
+			 gsg <- attr.tab$gsg
 
-		 message(paste('lat =', lat))
-		 message(paste('lon =', lon))
+			 gsg.id <- gsg[['1:sum(idx)']]
 
-	     leafletProxy("googlemap") %>% 
-		 fitBounds(lon - dst, lat - dst, lon + dst, lat + dst)
-	   })
+		   # get corrdinates from grid and bind to ID dataframe
+		   pnts <- cbind(gsg.id, as.data.frame(gsg)[,c('X','Y')])
+		   names(pnts) <- c('id', 'lon', 'lat') 
+
+		   dst <- 0.5
+		   lat <- pnts$lat[ind]
+		   lon <- pnts$lon[ind]
+
+		   leafletProxy("googlemap") %>% 
+		  		 fitBounds(lon - dst, lat - dst, lon + dst, lat + dst)
+		 }) 
 	 })
 
 
-  ## Map for assessment ############
-  ## Initial map (update after grid is generated, see leafletProxy)
-  output$googlemap <- renderLeaflet({
-    setPreview()
+	# observer handling zoom when goto button is clicked
+	observe({
+	   if (input$zoomToGrid==0)
+	     return() 
 
-    leaflet() %>%
-      #addProviderTiles(providers$Esri.NatGeoWorldMap) %>%
-      addTiles(
-        urlTemplate = "https://mts1.google.com/vt/lyrs=s&hl=en&src=app&x={x}&y={y}&z={z}&s=G",
-        attribution = 'Google'
-      )
+		 message('ZoomToGrid clicked')
+		 
+		 # Needs to be isolated to not be triggered
+		 # in case `attr.tab$gsg` changes
+		 isolate({ 
 
+			 grd <- attr.tab$gsg
 
-
-
-
-
-
-
-  })
+			 leafletProxy("googlemap", data = grd) %>%
+				 fitBounds(grd@bbox[1, 1] - 1, grd@bbox[2, 1] - 1, 
+					 grd@bbox[1, 2] + 1, grd@bbox[2, 2] + 1) 
+		 }) 
+	 })
 
 
 

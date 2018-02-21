@@ -101,10 +101,16 @@ ui <- dashboardPage(
 
                 ),
 
-                box(id = "pointlist", width = 4, height = "60vh",
+                box(id = "pointlist", width = 3, height = "60vh",
                     title = "Point list",
                     DT::dataTableOutput('pointlist'),
-										icon('crosshair')
+										#icon('crosshair')
+										actionButton('zoomToPoint', 'zoom to point'),
+
+										br(),
+										br(),
+
+										actionButton('zoomToGrid', 'zoom to grid')
                 )
               ),
 
