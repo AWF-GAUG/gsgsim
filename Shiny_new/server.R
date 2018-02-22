@@ -31,6 +31,8 @@ shinyServer(function(input, output, session) {
   attr.tab <- reactiveValues(gsg=NULL, bnd=NULL, 
 		lcc=data.frame(id=NA, trees=NA))
 
+
+
   
   ## Small preview map ############
   # Initial map (update after grid is generated, see leafletProxy)
@@ -206,10 +208,34 @@ shinyServer(function(input, output, session) {
 					selection='single', rownames=FALSE)
 			
 			})
+		
+			# initialize empty land cover list
+			# by reading the names of files in `code_lists`
+			attr.tab$lcc <- list()
+			length(attr.tab$lcc) <- length(dir('code_lists'))
+			nms <- sapply(strsplit(dir('code_lists'), '\\.'), 
+				function(x) x[1])
+			names(attr.tab$lcc) <- nms
 
-      # update attribute table
-      attr.tab$lcc <- data.frame(id=gsg.id, 
-          trees=factor('tree', levels=c('tree', 'no tree')))
+			# create empty (NA) factors from list elements 
+			# with levels according to code lists.
+			# length of each vector is the number of points.
+			for (i in 1:length(attr.tab$lcc)){
+
+				# read code list
+				cds <- read.csv(paste('code_lists/', 
+						names(attr.tab$lcc)[[i]], '.csv', 
+						sep=''), stringsAsFactors=FALSE, head=FALSE)[,1] 
+
+				# create factor 
+				attr.tab$lcc[[i]] <- factor(rep(NA, length(gsg.id)), levels=cds)
+			} 
+
+			# convert list to data.frame
+			attr.tab$lcc <- as.data.frame(attr.tab$lcc)
+			
+			message(str(attr.tab$lcc))
+
 
     }) # ObserveEvent closed
    
@@ -254,8 +280,9 @@ shinyServer(function(input, output, session) {
     
     updateSelectInput(session, 'lcc_select', 
       label=paste('ID:', ind),
-      choices=levels(attr.tab$lcc$trees))
+      choices=names(attr.tab$lcc))
 
+		
     # update markers (highlight selected point)
     n <- 1:nrow(attr.tab$lcc) # nrow of attribute table 
 
@@ -271,15 +298,29 @@ shinyServer(function(input, output, session) {
     
     }) 
 
-  # when input is selected, update reactive value tables
-  observeEvent(input$lcc_select, {
+	# update lcc factor level selection
+	observeEvent(input$lcc_select, {
+		if(input$lcc_select=='')
+			return()
+
+		updateSelectInput(session, 'lcc_levels_select', 
+			choices=levels(attr.tab$lcc[, input$lcc_select]))
+	})
+
+
+  # when lcc level is selected, update reactive value tables
+  observe({
+
+		if(input$lcc_select=='' | input$lcc_levels_select=='')
+			return()
       
     ind <- input$pointlist_row_last_clicked 
-    attr.tab$lcc$trees[ind] <- input$lcc_select 
+    attr.tab$lcc[ind, input$lcc_select] <- input$lcc_levels_select 
     
     message(print(attr.tab$lcc))
 
         })
+
 
 
 	# observer handling zoom when goto button is clicked

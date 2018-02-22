@@ -90,10 +90,6 @@ ui <- dashboardPage(
 
       tabItem("assessment",
 
-				div(class='outer',
-					tags$head(includeScript('gomap.js')) # includes gomap?
-					), 
-
               fluidRow(
                 box(id = "mapwindow", width = 8, height = "60vh",
                     leafletOutput('googlemap', height = "58vh")
@@ -120,7 +116,8 @@ ui <- dashboardPage(
                        selected = "Tab3",
                        tabPanel("Land Cover Components (LCC)", 
 			       #verbatimTextOutput('lcc'),
-			       selectInput('lcc_select', 'Select point from list', NULL)
+			       selectInput('lcc_select', 'Select point from list', NULL),
+			       selectInput('lcc_levels_select', 'Select point from list', NULL)
 			       ),
                        tabPanel("Land use / function attributes (LUA)", "Tab content 2"),
                        tabPanel("Landscape characteristics", "Note that when side=right, the tab order is reversed.")
