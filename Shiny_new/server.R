@@ -21,19 +21,23 @@ loadData <- function() {
 
 shinyServer(function(input, output, session) {
 	
-	# Cleanup routine
+	# Cleanup routine. Maybe used to close database
+	# connections or detach data. It only returns
+	# and 'Exit' message now with helps with debugging,
+	# but I'll just leave it here (lburggr).
 	cleanupOnExit <- session$onSessionEnded(function(){
 		message('Exit')
 })
 
 
-  # reactive values for storing attributes
+  # Reactive values for storing the global sampling
+	# grid and further attributes. 
+	#' @param gsg Global sampling grid
+	#' @param bnd Boundary
+	#' @param lcc Dummy attribute table (land cover classes)  
   attr.tab <- reactiveValues(gsg=NULL, bnd=NULL, 
 		lcc=data.frame(id=NA, trees=NA))
 
-
-
-  
   ## Small preview map ############
   # Initial map (update after grid is generated, see leafletProxy)
   output$preview <- renderLeaflet({
@@ -53,7 +57,6 @@ shinyServer(function(input, output, session) {
 		message('Google Map created')
 
     leaflet() %>%
-      #addProviderTiles(providers$Esri.NatGeoWorldMap) %>%
       addTiles(
         urlTemplate = "https://mts1.google.com/vt/lyrs=s&hl=en&src=app&x={x}&y={y}&z={z}&s=G",
         attribution = 'Google'
@@ -82,12 +85,15 @@ shinyServer(function(input, output, session) {
 		message('Google Map updated')
 
 		### create standard markers
+		# (standard marker provided by `addAwesomeMarkers`
+		# looks a bit different, which looks strange when
+		# markers are updated on point selection)
 		blue.marker <- makeIcon(
 			iconUrl='marker-icon.png',
 			shadowUrl='marker-shadow.png'
 			) 
 		
-		grd <- attr.tab$gsg
+		grd <- attr.tab$gsg # get grid from reactive value list
 		leafletProxy("googlemap", data = grd) %>%
 			fitBounds(grd@bbox[1,1]-1, grd@bbox[2,1]-1, grd@bbox[1,2]+1, 
 				grd@bbox[2,2]+1) %>% addMarkers(data = grd, icon=blue.marker) 
@@ -124,7 +130,8 @@ shinyServer(function(input, output, session) {
       # load selected aoi as boundary
       in_bnd <- input$aoi
 
-      # getaoi depending on file format (currently only KML is used, but shp is possible.
+      # getaoi depending on file format (currently only KML 
+			# is used, but shp is possible.
       # Radiobuttons for inputformat are commented in ui)
       if (is.null(in_bnd)) {
         getaoi <- NULL
@@ -161,10 +168,6 @@ shinyServer(function(input, output, session) {
 			# generate grid and save to reactive variable
       attr.tab$gsg <- isolate(gen_gsg(input$dist, attr.tab$bnd)) 
   
-			# TODO: temporary save of grd to gsg, 
-			# 'grd' to be replaced by attr$tab.grd successively!
-			#gsg <- attr.tab$gsg
-
       ### Downloading the kml file #######
 
       ### Enable download button when gsg is generated (inside observeEvent)
@@ -191,8 +194,8 @@ shinyServer(function(input, output, session) {
 						options = list(pageLength = 25),
               selection = 'single')) 
 
-      # Generate point list for navigation in "Assessment" (a short form of the 
-      # data table)
+      # Generate point list for navigation in "Assessment" 
+			# (a short form of the # data table)
       gsg.id <- attr.tab$gsg[['1:sum(idx)']]
 
       output$pointlist <- DT::renderDataTable({
@@ -211,6 +214,7 @@ shinyServer(function(input, output, session) {
 		
 			# initialize empty land cover list
 			# by reading the names of files in `code_lists`
+			# directory.
 			attr.tab$lcc <- list()
 			length(attr.tab$lcc) <- length(dir('code_lists'))
 			nms <- sapply(strsplit(dir('code_lists'), '\\.'), 
@@ -234,9 +238,6 @@ shinyServer(function(input, output, session) {
 			# convert list to data.frame
 			attr.tab$lcc <- as.data.frame(attr.tab$lcc)
 			
-			message(str(attr.tab$lcc))
-
-
     }) # ObserveEvent closed
    
 
@@ -259,7 +260,6 @@ shinyServer(function(input, output, session) {
 			opacity = 0.3,
 			fillOpacity = 0.5
 			) %>%
-  
   
     addCircles(
       data = grd,
@@ -286,7 +286,7 @@ shinyServer(function(input, output, session) {
     # update markers (highlight selected point)
     n <- 1:nrow(attr.tab$lcc) # nrow of attribute table 
 
-    # create marker with yellow marker for selected point 
+    # create yellow marker for selected point 
     highlightMarker <- makeIcon(
       # if id of selected row matches attribute table row, set yellow marker
       iconUrl=ifelse(n==ind, 'marker-icon-yellow.png', 'marker-icon.png'),
@@ -317,8 +317,6 @@ shinyServer(function(input, output, session) {
     ind <- input$pointlist_row_last_clicked 
     attr.tab$lcc[ind, input$lcc_select] <- input$lcc_levels_select 
     
-    message(print(attr.tab$lcc))
-
         })
 
 
@@ -354,8 +352,6 @@ shinyServer(function(input, output, session) {
 	   if (input$zoomToGrid==0)
 	     return() 
 
-		 message('ZoomToGrid clicked')
-		 
 		 # Needs to be isolated to not be triggered
 		 # in case `attr.tab$gsg` changes
 		 isolate({ 
