@@ -20,7 +20,7 @@ loadData <- function() {
 ##########################################################
 
 shinyServer(function(input, output, session) {
-	
+
 	# Cleanup routine. Maybe used to close database
 	# connections or detach data. It only returns
 	# and 'Exit' message now with helps with debugging,
@@ -31,11 +31,11 @@ shinyServer(function(input, output, session) {
 
 
   # Reactive values for storing the global sampling
-	# grid and further attributes. 
+	# grid and further attributes.
 	#' @param gsg Global sampling grid
 	#' @param bnd Boundary
-	#' @param lcc Dummy attribute table (land cover classes)  
-  attr.tab <- reactiveValues(gsg=NULL, bnd=NULL, 
+	#' @param lcc Dummy attribute table (land cover classes)
+  attr.tab <- reactiveValues(gsg=NULL, bnd=NULL,
 		lcc=data.frame(id=NA, trees=NA))
 
   ## Small preview map ############
@@ -60,16 +60,16 @@ shinyServer(function(input, output, session) {
       addTiles(
         urlTemplate = "https://mts1.google.com/vt/lyrs=s&hl=en&src=app&x={x}&y={y}&z={z}&s=G",
         attribution = 'Google'
-      ) 
-		
+      )
+
 	})
 
 	# googlemap shows some strange behavior -- it is _only_ created
 	# when the assessment tab is clicked. If the google map is
-	# updated as usual by a simple call to leafletProxy on 
-	# click of the go button (which creates the grid), 
+	# updated as usual by a simple call to leafletProxy on
+	# click of the go button (which creates the grid),
 	# it is overwritten by the creation of the
-	# empty map on changing to the assessment tab. As a 
+	# empty map on changing to the assessment tab. As a
 	# workaround, updating the map is part of the following
 	# reactive function which is included in the _creation_
 	# of the map above.
@@ -81,7 +81,7 @@ shinyServer(function(input, output, session) {
 		# update googlemap
 		if(is.null(attr.tab$gsg))
 			return()
-		
+
 		message('Google Map updated')
 
 		### create standard markers
@@ -91,14 +91,14 @@ shinyServer(function(input, output, session) {
 		blue.marker <- makeIcon(
 			iconUrl='marker-icon.png',
 			shadowUrl='marker-shadow.png'
-			) 
-		
+			)
+
 		grd <- attr.tab$gsg # get grid from reactive value list
 		leafletProxy("googlemap", data = grd) %>%
-			fitBounds(grd@bbox[1,1]-1, grd@bbox[2,1]-1, grd@bbox[1,2]+1, 
-				grd@bbox[2,2]+1) %>% addMarkers(data = grd, icon=blue.marker) 
+			fitBounds(grd@bbox[1,1]-1, grd@bbox[2,1]-1, grd@bbox[1,2]+1,
+				grd@bbox[2,2]+1) %>% addMarkers(data = grd, icon=blue.marker)
 	})
-	
+
   ## Grid generation #################
   # Reset grid settings
   observeEvent(input$reset_input, {
@@ -109,10 +109,10 @@ shinyServer(function(input, output, session) {
 		#attr.tab$gsg <- NULL
 		#attr.tab$<- NULL
 
-		leafletProxy('preview') %>% 
+		leafletProxy('preview') %>%
 			clearShapes()
 
-		leafletProxy('googlemap') %>% 
+		leafletProxy('googlemap') %>%
 			clearMarkers()
   })
 
@@ -130,7 +130,7 @@ shinyServer(function(input, output, session) {
       # load selected aoi as boundary
       in_bnd <- input$aoi
 
-      # getaoi depending on file format (currently only KML 
+      # getaoi depending on file format (currently only KML
 			# is used, but shp is possible.
       # Radiobuttons for inputformat are commented in ui)
       if (is.null(in_bnd)) {
@@ -164,10 +164,10 @@ shinyServer(function(input, output, session) {
       country_code = input$country_code,
       adm_level = 0
         )
-			
+
 			# generate grid and save to reactive variable
-      attr.tab$gsg <- isolate(gen_gsg(input$dist, attr.tab$bnd)) 
-  
+      attr.tab$gsg <- isolate(gen_gsg(input$dist, attr.tab$bnd))
+
       ### Downloading the kml file #######
 
       ### Enable download button when gsg is generated (inside observeEvent)
@@ -190,69 +190,69 @@ shinyServer(function(input, output, session) {
       # Generate Data Table for Data explorer
 
       output$datatable <- DT::renderDataTable(
-          DT::datatable(as.data.frame(attr.tab$gsg), 
+          DT::datatable(as.data.frame(attr.tab$gsg),
 						options = list(pageLength = 25),
-              selection = 'single')) 
+              selection = 'single'))
 
-      # Generate point list for navigation in "Assessment" 
+      # Generate point list for navigation in "Assessment"
 			# (a short form of the # data table)
       gsg.id <- attr.tab$gsg[['1:sum(idx)']]
 
       output$pointlist <- DT::renderDataTable({
 
 				pnts <- cbind(gsg.id, as.data.frame(attr.tab$gsg)[,c('X','Y')])
-				names(pnts) <- c('id', 'lon', 'lat') 
+				names(pnts) <- c('id', 'lon', 'lat')
 
 				# datatable for point list
 				DT::datatable(data.frame(id=pnts$id, lon=round(pnts$lon, 3),
-						lat=round(pnts$lat, 3)), 
-					options = list(pageLength = 5, searching = FALSE), 
+						lat=round(pnts$lat, 3)),
+					options = list(pageLength = 5, searching = FALSE),
 					escape = FALSE,
 					selection='single', rownames=FALSE)
-			
+
 			})
-		
+
 			# initialize empty land cover list
 			# by reading the names of files in `code_lists`
 			# directory.
 			attr.tab$lcc <- list()
 			length(attr.tab$lcc) <- length(dir('code_lists'))
-			nms <- sapply(strsplit(dir('code_lists'), '\\.'), 
+			nms <- sapply(strsplit(dir('code_lists'), '\\.'),
 				function(x) x[1])
 			names(attr.tab$lcc) <- nms
 
-			# create empty (NA) factors from list elements 
+			# create empty (NA) factors from list elements
 			# with levels according to code lists.
 			# length of each vector is the number of points.
 			for (i in 1:length(attr.tab$lcc)){
 
 				# read code list
-				cds <- read.csv(paste('code_lists/', 
-						names(attr.tab$lcc)[[i]], '.csv', 
-						sep=''), stringsAsFactors=FALSE, head=FALSE)[,1] 
+				cds <- read.csv(paste('code_lists/',
+						names(attr.tab$lcc)[[i]], '.csv',
+						sep=''), stringsAsFactors=FALSE, head=FALSE)[,1]
 
-				# create factor 
+				# create factor
 				attr.tab$lcc[[i]] <- factor(rep(NA, length(gsg.id)), levels=cds)
-			} 
+			}
 
 			# convert list to data.frame
 			attr.tab$lcc <- as.data.frame(attr.tab$lcc)
-			
+
     }) # ObserveEvent closed
-   
+
 
 	### Updating maps
- 
+
   # Update map for assessment
 	observe({
 		if(is.null(attr.tab$gsg) | is.null(attr.tab$bnd))
 			return()
 
-		grd <- attr.tab$gsg 
+		grd <- attr.tab$gsg
 		leafletProxy("preview", data = grd) %>%
-			fitBounds(grd@bbox[1, 1] - 1, grd@bbox[2, 1] - 1, 
+			fitBounds(grd@bbox[1, 1] - 1, grd@bbox[2, 1] - 1,
 				grd@bbox[1, 2] + 1, grd@bbox[2, 2] + 1) %>%
-		clearShapes() %>% 
+		clearShapes() %>%
 		addPolygons(
 			data = attr.tab$bnd,
 			weight = 1,
@@ -260,7 +260,7 @@ shinyServer(function(input, output, session) {
 			opacity = 0.3,
 			fillOpacity = 0.5
 			) %>%
-  
+
     addCircles(
       data = grd,
       weight = 3,
@@ -270,23 +270,23 @@ shinyServer(function(input, output, session) {
       fillOpacity = 0.9
     )
 	})
- 
+
   # when row is selected from pointlist, update
   # variable selection
-  observeEvent(input$pointlist_rows_selected, { 
+  observeEvent(input$pointlist_rows_selected, {
 
-    # update id for attribute selection 
-    ind <- input$pointlist_row_last_clicked 
-    
-    updateSelectInput(session, 'lcc_select', 
+    # update id for attribute selection
+    ind <- input$pointlist_row_last_clicked
+
+    updateSelectInput(session, 'lcc_select',
       label=paste('ID:', ind),
       choices=names(attr.tab$lcc))
 
-		
-    # update markers (highlight selected point)
-    n <- 1:nrow(attr.tab$lcc) # nrow of attribute table 
 
-    # create yellow marker for selected point 
+    # update markers (highlight selected point)
+    n <- 1:nrow(attr.tab$lcc) # nrow of attribute table
+
+    # create yellow marker for selected point
     highlightMarker <- makeIcon(
       # if id of selected row matches attribute table row, set yellow marker
       iconUrl=ifelse(n==ind, 'marker-icon-yellow.png', 'marker-icon.png'),
@@ -295,15 +295,15 @@ shinyServer(function(input, output, session) {
 
 		leafletProxy('googlemap') %>%
 			addMarkers(data = attr.tab$gsg, icon=highlightMarker)
-    
-    }) 
+
+    })
 
 	# update lcc factor level selection
 	observeEvent(input$lcc_select, {
 		if(input$lcc_select=='')
 			return()
 
-		updateSelectInput(session, 'lcc_levels_select', 
+		updateSelectInput(session, 'lcc_levels_select',
 			choices=levels(attr.tab$lcc[, input$lcc_select]))
 	})
 
@@ -313,10 +313,10 @@ shinyServer(function(input, output, session) {
 
 		if(input$lcc_select=='' | input$lcc_levels_select=='')
 			return()
-      
-    ind <- input$pointlist_row_last_clicked 
-    attr.tab$lcc[ind, input$lcc_select] <- input$lcc_levels_select 
-    
+
+    ind <- input$pointlist_row_last_clicked
+    attr.tab$lcc[ind, input$lcc_select] <- input$lcc_levels_select
+
         })
 
 
@@ -324,44 +324,44 @@ shinyServer(function(input, output, session) {
 	# observer handling zoom when goto button is clicked
 	observe({
 	   if (input$zoomToPoint==0)
-	     return() 
-		 
+	     return()
+
 		 isolate({
 			 # get last selected row (should correspond to id)
-		   ind <- input$pointlist_row_last_clicked 
+		   ind <- input$pointlist_row_last_clicked
 			 gsg <- attr.tab$gsg
 
 			 gsg.id <- gsg[['1:sum(idx)']]
 
 		   # get corrdinates from grid and bind to ID dataframe
 		   pnts <- cbind(gsg.id, as.data.frame(gsg)[,c('X','Y')])
-		   names(pnts) <- c('id', 'lon', 'lat') 
+		   names(pnts) <- c('id', 'lon', 'lat')
 
-		   dst <- 0.5
+		   dst <- 0.1
 		   lat <- pnts$lat[ind]
 		   lon <- pnts$lon[ind]
 
-		   leafletProxy("googlemap") %>% 
+		   leafletProxy("googlemap") %>%
 		  		 fitBounds(lon - dst, lat - dst, lon + dst, lat + dst)
-		 }) 
+		 })
 	 })
 
 
 	# observer handling zoom when goto button is clicked
 	observe({
 	   if (input$zoomToGrid==0)
-	     return() 
+	     return()
 
 		 # Needs to be isolated to not be triggered
 		 # in case `attr.tab$gsg` changes
-		 isolate({ 
+		 isolate({
 
 			 grd <- attr.tab$gsg
 
 			 leafletProxy("googlemap", data = grd) %>%
-				 fitBounds(grd@bbox[1, 1] - 1, grd@bbox[2, 1] - 1, 
-					 grd@bbox[1, 2] + 1, grd@bbox[2, 2] + 1) 
-		 }) 
+				 fitBounds(grd@bbox[1, 1] - 0.1, grd@bbox[2, 1] - 0.1,
+					 grd@bbox[1, 2] + 0.1, grd@bbox[2, 2] + 0.1)
+		 })
 	 })
 
 

@@ -81,9 +81,9 @@ ui <- dashboardPage(
               ),
               fluidRow(
                 box(
-                  width = 12, solidHeader = TRUE,
+                  width = 12, height = "50%", solidHeader = TRUE,
                   title = "Preview",
-                  leafletOutput("preview",height = "50vh")
+                  leafletOutput("preview")
                 )
               )
       ), # tab generate closed
@@ -91,13 +91,13 @@ ui <- dashboardPage(
       tabItem("assessment",
 
               fluidRow(
-                box(id = "mapwindow", width = 8, height = "60vh",
-                    leafletOutput('googlemap', height = "58vh")
+                box(id = "mapwindow", width = 8, height = 500,
+                    leafletOutput("googlemap")
 
 
                 ),
 
-                box(id = "pointlist", width = 3, height = "60vh",
+                box(id = "pointlist", width = 4, height = 500,
                     title = "Point list",
                     DT::dataTableOutput('pointlist'),
 										actionButton('zoomToPoint', 'zoom to point'),
@@ -113,7 +113,7 @@ ui <- dashboardPage(
                 tabBox(id = "variables", width = 12,
                        title = "Assess variables",
                        selected = "Tab3",
-                       tabPanel("Land Cover Components (LCC)", 
+                       tabPanel("Land Cover Components (LCC)",
 			       #verbatimTextOutput('lcc'),
 			       selectInput('lcc_select', 'Select point from list', NULL),
 			       selectInput('lcc_levels_select', 'Select point from list', NULL)
